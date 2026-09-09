@@ -122,6 +122,24 @@
       border: 2px dashed #6366f1 !important;
     }
 
+    /* Mobile Day Scrollbar & Touch Polish */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @media (max-width: 640px) {
+      .event-card {
+        padding: 10px 12px !important;
+      }
+      .glass-panel {
+        border-radius: 20px !important;
+      }
+    }
+
     /* Print Styles */
     @media print {
       body {
@@ -176,115 +194,121 @@
   <div class="fixed bottom-10 right-10 w-[450px] h-[450px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none animate-blob" style="animation-delay: 2s;"></div>
   <div class="fixed top-1/2 left-10 w-80 h-80 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none animate-blob" style="animation-delay: 4s;"></div>
 
-  <div class="max-w-[1650px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 relative z-10">
+  <div class="max-w-[1650px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 relative z-10">
 
-    <header class="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-      <div class="text-center md:text-left space-y-2 max-w-2xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
+    <header class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+      <div class="text-center md:text-left space-y-2 max-w-2xl w-full">
+        <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
           <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
           <span>Espace d'Organisation BTS</span>
         </div>
-        <h1 id="mainTitle" class="editable-header text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent cursor-pointer" contenteditable="true" title="Cliquer pour modifier le titre" onblur="saveHeaderData()">
+        <h1 id="mainTitle" class="editable-header text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent cursor-pointer break-words" contenteditable="true" title="Cliquer pour modifier le titre" onblur="saveHeaderData()">
           Planning & Agenda Hebdomadaire
         </h1>
-        <p id="subTitle" class="editable-header text-slate-400 text-sm font-medium cursor-pointer" contenteditable="true" title="Cliquer pour modifier la description" onblur="saveHeaderData()">
+        <p id="subTitle" class="editable-header text-slate-400 text-xs sm:text-sm font-medium cursor-pointer break-words" contenteditable="true" title="Cliquer pour modifier la description" onblur="saveHeaderData()">
           Organisation générale des cours, travaux dirigés & événements
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 z-10">
-        <button id="googleAuthBtn" onclick="handleGoogleLogin()" class="bg-white/10 hover:bg-white/20 text-slate-100 font-bold px-4 py-2.5 rounded-2xl border border-white/15 shadow-lg backdrop-blur-md hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm" title="Se connecter avec Google">
+      <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-3 w-full md:w-auto z-10">
+        <button id="googleAuthBtn" onclick="handleGoogleLogin()" class="bg-white/10 hover:bg-white/20 text-slate-100 font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-white/15 shadow-lg backdrop-blur-md hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center" title="Se connecter avec Google">
           <i class="fa-brands fa-google text-red-400"></i>
           <span id="googleAuthText">Connexion Google</span>
         </button>
-        <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+        <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Générer un fichier</span>
+          <span>Fiche IA</span>
         </button>
-        <button onclick="openDatedEventModal()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-sky-600/25 hover:shadow-sky-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+        <button onclick="openDatedEventModal()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-sky-600/25 hover:shadow-sky-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
           <i class="fa-solid fa-calendar-day"></i>
-          <span>Ajouter un Événement</span>
+          <span class="hidden xs:inline">Événement</span>
+          <span class="xs:hidden">Événement</span>
         </button>
-        <button onclick="openEventModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+        <button onclick="openEventModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
           <i class="fa-solid fa-plus"></i>
           <span>Créneau</span>
         </button>
-        <button onclick="openModal('downloadModal')" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-amber-600/25 hover:shadow-amber-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+        <button onclick="openModal('downloadModal')" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-600/25 hover:shadow-amber-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
           <i class="fa-solid fa-download"></i>
-          <span>Télécharger</span>
+          <span class="hidden xs:inline">Télécharger</span>
+          <span class="xs:hidden">Export</span>
         </button>
       </div>
     </header>
 
-    <div class="no-print relative z-[80] space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-4 glass-panel p-2.5 rounded-2xl">
+    <div class="no-print relative z-[80] space-y-3 sm:space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 glass-panel p-2.5 sm:p-3 rounded-2xl">
         <!-- Main Navigation Pills -->
-        <nav class="flex items-center gap-1.5 p-1 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-x-auto w-full sm:w-auto">
-          <button id="tabPlanning" onclick="switchMainTab('planning')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow">
+        <nav class="flex items-center gap-1 sm:gap-1.5 p-1 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-x-auto w-full md:w-auto no-scrollbar">
+          <button id="tabPlanning" onclick="switchMainTab('planning')" class="px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 bg-indigo-600 text-white shadow whitespace-nowrap flex-shrink-0">
             <i class="fa-solid fa-calendar-week"></i> Planning Type
           </button>
-          <button id="tabAgenda" onclick="switchMainTab('agenda')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white">
+          <button id="tabAgenda" onclick="switchMainTab('agenda')" class="px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 text-slate-400 hover:text-white whitespace-nowrap flex-shrink-0">
             <i class="fa-solid fa-clock text-sky-400"></i> Agenda Daté
             <span id="agendaCountBadge" class="bg-sky-500/20 text-sky-300 text-[10px] px-1.5 py-0.2 rounded-full hidden">0</span>
           </button>
-          <button id="tabHomework" onclick="switchMainTab('homework')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white">
+          <button id="tabHomework" onclick="switchMainTab('homework')" class="px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 text-slate-400 hover:text-white whitespace-nowrap flex-shrink-0">
             <i class="fa-solid fa-list-check text-emerald-400"></i> Devoirs & Projets
             <span id="taskCounterBadge" class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full hidden">0</span>
           </button>
         </nav>
 
         <!-- Right Side Tools -->
-        <div class="flex items-center gap-2.5 ml-auto">
-          <div id="planningViewSwitchers" class="bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 flex items-center gap-1 text-xs font-medium">
-            <button id="viewBtn5" onclick="setViewMode('5days')" class="px-3 py-1.5 rounded-lg transition text-white bg-indigo-600/80">5 Jours</button>
-            <button id="viewBtn7" onclick="setViewMode('7days')" class="px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white">7 Jours</button>
+        <div class="flex items-center justify-between md:justify-end gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pt-1 md:pt-0 border-t md:border-t-0 border-slate-800/60">
+          <div id="planningViewSwitchers" class="bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 flex items-center gap-1 text-xs font-medium flex-shrink-0">
+            <button id="viewBtn5" onclick="setViewMode('5days')" class="px-2.5 sm:px-3 py-1.5 rounded-lg transition text-white bg-indigo-600/80 text-[11px] sm:text-xs">5 Jours</button>
+            <button id="viewBtn7" onclick="setViewMode('7days')" class="px-2.5 sm:px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white text-[11px] sm:text-xs">7 Jours</button>
           </div>
 
-          <!-- Cloud Sync Status Badge -->
-          <button id="cloudStatusBtn" onclick="openModal('cloudModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-2 border border-slate-700/60">
-            <span id="cloudDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="cloudStatusText" class="hidden sm:inline">Cloud Actif</span>
-          </button>
-
-          <!-- Stats Trigger -->
-          <button onclick="openModal('statsModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60">
-            <i class="fa-solid fa-chart-pie text-sky-400"></i> Stats
-          </button>
-
-          <!-- Activities Manager Trigger -->
-          <button onclick="openModal('managerModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60">
-            <i class="fa-solid fa-palette text-pink-400"></i> Activités
-          </button>
-
-          <!-- Options Dropdown Menu -->
-          <div class="relative inline-block text-left z-[300]">
-            <button onclick="toggleDropdown('moreMenu')" class="glass-card hover:bg-slate-800/60 p-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center border border-slate-700/60">
-              <i class="fa-solid fa-ellipsis-vertical px-1"></i>
+          <div class="flex items-center gap-1.5 sm:gap-2 ml-auto">
+            <!-- Cloud Sync Status Badge -->
+            <button id="cloudStatusBtn" onclick="openModal('cloudModal')" class="glass-card hover:bg-slate-800/60 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 sm:gap-2 border border-slate-700/60 flex-shrink-0">
+              <span id="cloudDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="cloudStatusText" class="hidden sm:inline">Cloud Actif</span>
             </button>
-            
-            <div id="moreMenu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl glass-panel shadow-2xl py-2 z-[300] border border-slate-700/80 divide-y divide-slate-800">
-              <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Options & Modèles</div>
-              <button onclick="openModal('templatesModal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
-                <i class="fa-solid fa-shapes text-indigo-400 w-4"></i> Charger Modèle BTS
+
+            <!-- Stats Trigger -->
+            <button onclick="openModal('statsModal')" class="glass-card hover:bg-slate-800/60 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60 flex-shrink-0">
+              <i class="fa-solid fa-chart-pie text-sky-400"></i>
+              <span class="hidden xs:inline">Stats</span>
+            </button>
+
+            <!-- Activities Manager Trigger -->
+            <button onclick="openModal('managerModal')" class="glass-card hover:bg-slate-800/60 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60 flex-shrink-0">
+              <i class="fa-solid fa-palette text-pink-400"></i>
+              <span class="hidden xs:inline">Activités</span>
+            </button>
+
+            <!-- Options Dropdown Menu -->
+            <div class="relative inline-block text-left z-[300] flex-shrink-0">
+              <button onclick="toggleDropdown('moreMenu')" class="glass-card hover:bg-slate-800/60 p-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center border border-slate-700/60">
+                <i class="fa-solid fa-ellipsis-vertical px-1"></i>
               </button>
-              <button onclick="exportToICS()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
-                <i class="fa-solid fa-calendar-plus text-emerald-400 w-4"></i> Exporter en .ICS
-              </button>
-              <button onclick="window.print()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
-                <i class="fa-solid fa-print text-amber-400 w-4"></i> Imprimer / PDF
-              </button>
-              <div class="py-1"></div>
-              <button onclick="exportJSONBackup()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
-                <i class="fa-solid fa-download text-sky-400 w-4"></i> Sauvegarder (JSON)
-              </button>
-              <button onclick="triggerJSONImport()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
-                <i class="fa-solid fa-upload text-violet-400 w-4"></i> Importer une sauvegarde
-              </button>
-              <input type="file" id="jsonFileInput" class="hidden" accept=".json" onchange="importJSONBackup(event)">
-              <div class="py-1"></div>
-              <button onclick="confirmResetAll()" class="w-full text-left px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-500/20 flex items-center gap-2 font-semibold">
-                <i class="fa-solid fa-trash-can w-4"></i> Réinitialiser tout
-              </button>
+              
+              <div id="moreMenu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl glass-panel shadow-2xl py-2 z-[300] border border-slate-700/80 divide-y divide-slate-800">
+                <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Options & Modèles</div>
+                <button onclick="openModal('templatesModal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                  <i class="fa-solid fa-shapes text-indigo-400 w-4"></i> Charger Modèle BTS
+                </button>
+                <button onclick="exportToICS()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                  <i class="fa-solid fa-calendar-plus text-emerald-400 w-4"></i> Exporter en .ICS
+                </button>
+                <button onclick="window.print()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                  <i class="fa-solid fa-print text-amber-400 w-4"></i> Imprimer / PDF
+                </button>
+                <div class="py-1"></div>
+                <button onclick="exportJSONBackup()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                  <i class="fa-solid fa-download text-sky-400 w-4"></i> Sauvegarder (JSON)
+                </button>
+                <button onclick="triggerJSONImport()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                  <i class="fa-solid fa-upload text-violet-400 w-4"></i> Importer une sauvegarde
+                </button>
+                <input type="file" id="jsonFileInput" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+                <div class="py-1"></div>
+                <button onclick="confirmResetAll()" class="w-full text-left px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-500/20 flex items-center gap-2 font-semibold">
+                  <i class="fa-solid fa-trash-can w-4"></i> Réinitialiser tout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -293,8 +317,13 @@
 
     <main>
       <!-- TAB 1: Weekly Planning View -->
-      <div id="viewPlanning" class="tab-content">
-        <div id="scheduleContainer" class="schedule-container grid gap-4">
+      <div id="viewPlanning" class="tab-content space-y-3">
+        <!-- Mobile Day Filter Selector Bar (visible on small screens) -->
+        <div id="mobileDayBar" class="md:hidden flex items-center gap-1.5 p-1 bg-slate-950/70 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div id="scheduleContainer" class="schedule-container grid gap-3 sm:gap-4">
           <!-- Rendered dynamically -->
         </div>
       </div>
@@ -1305,6 +1334,7 @@
 
     let currentMainTab = 'planning';
     let viewMode = '5days';
+    let mobileDayFilter = 'ALL';
     let dialogResolver = null;
     let draggedEventId = null;
     let currentGeneratedMarkdown = "";
@@ -1461,13 +1491,21 @@
       const container = document.getElementById('scheduleContainer');
       container.innerHTML = '';
 
+      renderMobileDayBar();
+
       const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
 
-      container.className = `schedule-container grid grid-cols-1 ${viewMode === '5days' ? 'md:grid-cols-5' : 'md:grid-cols-7'} gap-4`;
+      // Filter days on mobile if a specific day is selected
+      const isMobile = window.innerWidth < 768;
+      const displayDays = (isMobile && mobileDayFilter !== 'ALL') 
+        ? activeDays.filter(d => d === mobileDayFilter)
+        : activeDays;
 
-      activeDays.forEach(day => {
+      container.className = `schedule-container grid grid-cols-1 ${viewMode === '5days' ? 'md:grid-cols-5' : 'md:grid-cols-7'} gap-3 sm:gap-4`;
+
+      displayDays.forEach(day => {
         const dayCol = document.createElement('div');
-        dayCol.className = 'glass-panel rounded-3xl flex flex-col overflow-hidden transition-all border border-slate-800 shadow-xl';
+        dayCol.className = 'glass-panel rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden transition-all border border-slate-800 shadow-xl';
         
         dayCol.ondragover = (e) => { e.preventDefault(); dayCol.classList.add('drag-over'); };
         dayCol.ondragleave = () => dayCol.classList.remove('drag-over');
@@ -1493,7 +1531,7 @@
           const timeText = e.end ? `${e.start.replace(':', 'h')} - ${e.end.replace(':', 'h')}` : `${e.start.replace(':', 'h')}`;
           
           return `
-            <div class="event-card rounded-2xl p-3.5 cursor-pointer shadow-md transition-all hover:scale-[1.02] hover:shadow-xl relative border overflow-visible flex flex-col justify-between gap-2"
+            <div class="event-card rounded-2xl p-3 sm:p-3.5 cursor-pointer shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl relative border overflow-visible flex flex-col justify-between gap-2"
                  style="background: ${style.background}; border-color: ${style.border}; color: ${style.textColor};"
                  draggable="true"
                  ondragstart="handleDragStart(event, '${e.id}')"
@@ -1511,14 +1549,14 @@
         }).join('');
 
         dayCol.innerHTML = `
-          <div class="bg-slate-950/80 border-b border-slate-800 p-3 text-center flex items-center justify-between px-4">
+          <div class="bg-slate-950/80 border-b border-slate-800 p-2.5 sm:p-3 text-center flex items-center justify-between px-3 sm:px-4">
             <span class="font-extrabold text-xs tracking-wider uppercase text-slate-200">${day}</span>
-            <button onclick="openEventModalForDay('${day}')" class="no-print w-6 h-6 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/50 text-indigo-300 text-xs flex items-center justify-center transition" title="Ajouter un créneau">
+            <button onclick="openEventModalForDay('${day}')" class="no-print w-7 h-7 sm:w-6 sm:h-6 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/50 text-indigo-300 text-xs flex items-center justify-center transition" title="Ajouter un créneau">
               <i class="fa-solid fa-plus"></i>
             </button>
           </div>
 
-          <div class="p-2.5 flex flex-col gap-2.5 flex-grow min-h-[320px]">
+          <div class="p-2 sm:p-2.5 flex flex-col gap-2 sm:gap-2.5 flex-grow min-h-[220px] sm:min-h-[320px]">
             ${eventsHtml || `<div class="h-full flex items-center justify-center text-slate-500 text-xs italic py-8">Aucun cours créné</div>`}
           </div>
         `;
@@ -1526,6 +1564,43 @@
         container.appendChild(dayCol);
       });
     }
+
+    function renderMobileDayBar() {
+      const bar = document.getElementById('mobileDayBar');
+      if (!bar) return;
+
+      const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
+
+      let html = `
+        <button onclick="setMobileDayFilter('ALL')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap flex-shrink-0 ${mobileDayFilter === 'ALL' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white bg-slate-900/50'}">
+          Tous les jours
+        </button>
+      `;
+
+      activeDays.forEach(day => {
+        const shortName = day.substring(0, 3);
+        const isActive = mobileDayFilter === day;
+        html += `
+          <button onclick="setMobileDayFilter('${day}')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap flex-shrink-0 ${isActive ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white bg-slate-900/50'}">
+            ${shortName}.
+          </button>
+        `;
+      });
+
+      bar.innerHTML = html;
+    }
+
+    function setMobileDayFilter(day) {
+      mobileDayFilter = day;
+      renderSchedule();
+    }
+
+    // Re-render schedule on window resize to adapt mobile day filter layout dynamically
+    window.addEventListener('resize', () => {
+      if (currentMainTab === 'planning') {
+        renderSchedule();
+      }
+    });
 
     function renderDatedEvents() {
       const container = document.getElementById('datedEventsList');
