@@ -1052,6 +1052,8 @@
       }
 
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+
       try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
@@ -1063,7 +1065,23 @@
         if (typeof window.showToast === 'function') window.showToast(`Connecté : ${user.displayName || user.email}`);
       } catch (err) {
         console.error("Erreur de connexion Google:", err);
-        if (typeof window.showToast === 'function') window.showToast("Échec de connexion Google", "warning");
+        let errorMsg = "Échec de connexion Google";
+
+        if (err.code === 'auth/operation-not-allowed') {
+          errorMsg = "Activez 'Google' dans la Console Firebase (Authentication > Sign-in method)";
+        } else if (err.code === 'auth/unauthorized-domain') {
+          errorMsg = "Domaine non autorisé dans Firebase (Authentication > Settings > Authorized Domains)";
+        } else if (err.code === 'auth/popup-blocked') {
+          errorMsg = "Pop-up bloqué par le navigateur. Autorisez les fenêtres surgissantes";
+        } else if (err.code === 'auth/popup-closed-by-user') {
+          errorMsg = "Fenêtre de connexion fermée";
+        } else if (err.message) {
+          errorMsg = `Erreur Google: ${err.code || err.message}`;
+        }
+
+        if (typeof window.showToast === 'function') {
+          window.showToast(errorMsg, "warning");
+        }
       }
     };
 
