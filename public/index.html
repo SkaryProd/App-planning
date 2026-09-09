@@ -1,55 +1,1129 @@
-<!-- ... existing code ... -->
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planning Hebdomadaire BTS</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- HTML2Canvas for PNG Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0b0f19;
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism utility classes */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-modal {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.6);
+    }
+
+    /* Editable Text Hover state */
+    .editable-header:hover, .editable-header:focus {
+      outline: 1px dashed rgba(99, 102, 241, 0.5);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+
+    /* Color picker swatches */
+    .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-swatch::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; }
+
+    /* Activity Chip Badge Selection */
+    .activity-chip {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .activity-chip.selected {
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body class="relative text-slate-100 flex flex-col min-height-screen">
+
+  <!-- Ambient background lighting blobs -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- Main Header -->
+  <header class="max-w-7xl mx-auto w-full px-4 pt-8 pb-4 text-center">
+    <div class="space-y-2 mb-6">
+      <h1 id="mainTitle" class="editable-header text-3xl sm:text-4xl font-extrabold tracking-tight text-white inline-block px-3 py-1 cursor-pointer" contenteditable="true" onblur="saveHeaderTitle()">
+        Planning & Agenda Hebdomadaire
+      </h1>
+      <br>
+      <p id="subTitle" class="editable-header text-xs sm:text-sm font-bold tracking-wider text-slate-400 uppercase inline-block px-3 py-1 cursor-pointer" contenteditable="true" onblur="saveHeaderSubtitle()">
+        ORGANISATION GÉNÉRALE DES COURS, TRAVAUX DIRIGÉS & ÉVÉNEMENTS
+      </p>
+    </div>
+
+    <!-- Control Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800/80 max-w-5xl mx-auto backdrop-blur-md shadow-xl">
+      <!-- Left: Primary Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="openModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Créneau</span>
+        </button>
+
+        <button onclick="switchTab('ai')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+          <span>Générer un fichier</span>
+        </button>
+      </div>
+
+      <!-- Right: Auth & Download Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Google Auth Button -->
+        <button id="googleAuthBtn" onclick="handleGoogleLogin()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition flex items-center gap-2">
+          <i class="fa-brands fa-google text-red-400"></i>
+          <span id="authBtnLabel">Connexion Google</span>
+        </button>
+
+        <!-- Export & Download Button -->
+        <button onclick="openDownloadModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-semibold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition flex items-center gap-2">
+          <i class="fa-solid fa-download text-sky-400"></i>
+          <span>Télécharger</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex justify-center border-b border-slate-800 mt-6 max-w-5xl mx-auto gap-2 sm:gap-6 text-xs sm:text-sm font-semibold">
+      <button id="tabBtn-schedule" onclick="switchTab('schedule')" class="tab-btn px-4 py-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span>Planning Hebdo</span>
+      </button>
+      <button id="tabBtn-agenda" onclick="switchTab('agenda')" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i class="fa-solid fa-calendar-day"></i>
+        <span>Agenda Daté</span>
+      </button>
+      <button id="tabBtn-tasks" onclick="switchTab('tasks')" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Devoirs & Projets</span>
+      </button>
+      <button id="tabBtn-ai" onclick="switchTab('ai')" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i class="fa-solid fa-robot"></i>
+        <span>Fiches IA</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow">
+
+    <!-- VIEW 1: PLANNING HEBDOMADAIRE -->
+    <section id="view-schedule" class="space-y-8">
+      <!-- Grid Schedule Container -->
+      <div id="scheduleCaptureContainer" class="p-4 bg-slate-950/80 rounded-3xl border border-slate-800/80 shadow-2xl">
+        <!-- PNG Capture Header (Visible during export or header display) -->
+        <div id="pngHeaderDisplay" class="mb-6 p-4 text-center border-b border-slate-800">
+          <h2 id="pngHeaderTitle" class="text-2xl font-extrabold text-sky-400">Planning & Agenda Hebdomadaire</h2>
+          <p id="pngHeaderSubtitle" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">ORGANISATION GÉNÉRALE DES COURS & ACTIVITÉS</p>
+        </div>
+
+        <!-- Weekly Schedule Grid -->
+        <div id="scheduleGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <!-- Dynamic Days Rendered Here -->
+        </div>
+      </div>
+
+      <!-- Activities Manager -->
+      <div class="glass-card p-6 rounded-3xl space-y-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-palette text-indigo-400"></i>
+            <span>Gestionnaire des Activités</span>
+          </h3>
+          <span class="text-xs text-slate-400">Cliquez sur une activité pour la modifier</span>
+        </div>
+
+        <!-- Activity Creator -->
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center gap-3">
+          <input type="text" id="newActivityTitle" placeholder="Nom" class="bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 flex-grow min-w-[150px]">
+          
+          <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-700/80">
+            <span class="text-xs text-slate-400 px-2 font-medium">Couleur:</span>
+            <input type="color" id="newActivityColor" value="#38bdf8" class="color-swatch w-7 h-7 rounded-full cursor-pointer bg-transparent border-0">
+          </div>
+
+          <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-700/80">
+            <span class="text-xs text-slate-400 px-2 font-medium">Icône:</span>
+            <select id="newActivityIcon" class="bg-slate-950 text-white text-xs sm:text-sm focus:outline-none cursor-pointer">
+              <option value="fa-book">📚 Livre</option>
+              <option value="fa-laptop-code">💻 Informatique</option>
+              <option value="fa-shield-halved">🛡️ Sécurité</option>
+              <option value="fa-calculator">📐 Maths</option>
+              <option value="fa-microchip">🔬 Électronique</option>
+              <option value="fa-dumbbell">🏋️ Sport</option>
+              <option value="fa-brain">🧠 Révision</option>
+              <option value="fa-pen-ruler">✏️ TD / TP</option>
+            </select>
+          </div>
+
+          <button onclick="createNewActivity()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs sm:text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Créer l'activité</span>
+          </button>
+        </div>
+
+        <!-- Activities Grid -->
+        <div id="activitiesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <!-- Rendered Activities Cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: AGENDA DATÉ -->
+    <section id="view-agenda" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Agenda & Événements Datés</h2>
+            <p class="text-xs text-slate-400">Planifiez vos examens, rendez-vous et événements précis.</p>
+          </div>
+          <button onclick="openDatedEventModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs sm:text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-calendar-plus"></i>
+            <span>Ajouter un événement</span>
+          </button>
+        </div>
+
+        <div id="datedEventsList" class="space-y-3">
+          <!-- Rendered Dated Events -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: DEVOIRS & PROJETS -->
+    <section id="view-tasks" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Gestionnaire de Devoirs</h2>
+            <p class="text-xs text-slate-400">Suivez vos travaux à rendre, projets et révisions.</p>
+          </div>
+          <button onclick="openTaskModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs sm:text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Ajouter un devoir</span>
+          </button>
+        </div>
+
+        <div id="tasksList" class="space-y-3">
+          <!-- Rendered Homework Tasks -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: FICHES DE RÉVISION IA -->
+    <section id="view-ai" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl space-y-6">
+        <div>
+          <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i>
+            <span>Générateur de Fiches de Révision IA</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Collez votre cours, correction d'exercice ou déposez un fichier pour générer une fiche synthétique.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Input Form -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Type de document souhaité</label>
+              <select id="aiDocType" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-teal-500">
+                <option value="Fiche de révision synthétique (Points clés, définitions, formules)">Fiche de révision synthétique</option>
+                <option value="Quiz & Questions / Réponses d'entraînement avec corrigé">Quiz / Questions & Corrigé</option>
+                <option value="Résumé exécutif & Plan de cours structuré">Résumé & Plan de cours</option>
+                <option value="Fiche de définitions et lexique technique">Lexique & Définitions techniques</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Importer un fichier (Cours, Scan, PDF, Image)</label>
+              <input type="file" id="aiFileInput" accept=".txt,.md,.pdf,.png,.jpg,.jpeg" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-600/20 file:text-teal-300 hover:file:bg-teal-600/30 cursor-pointer">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Contenu ou Consignes particulières</label>
+              <textarea id="aiPromptInput" rows="6" placeholder="Collez ici le texte de votre cours, les réponses d'un devoir, ou précisez ce que vous souhaitez réviser..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"></textarea>
+            </div>
+
+            <button id="aiGenerateBtn" onclick="generateAISheet()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles"></i>
+              <span>Générer la fiche avec l'IA</span>
+            </button>
+          </div>
+
+          <!-- Output Display -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div id="aiOutputContent" class="text-xs sm:text-sm text-slate-300 overflow-y-auto max-h-[400px] whitespace-pre-wrap leading-relaxed space-y-2">
+              <p class="text-slate-500 italic text-center py-12">La fiche générée par l'IA apparaîtra ici...</p>
+            </div>
+
+            <div id="aiActions" class="hidden flex items-center gap-3 pt-3 border-t border-slate-800">
+              <button onclick="copyAIText()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-copy"></i>
+                <span>Copier</span>
+              </button>
+              <button onclick="downloadAIPDF()" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Imprimer / PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: CRÉNEAU HEBDOMADAIRE -->
+  <div id="eventModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="glass-modal w-full max-w-lg rounded-3xl p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="eventModalTitle" class="text-lg font-extrabold text-white">Ajouter un créneau</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <input type="hidden" id="eventId">
+
+      <!-- Activities Selection as Chips/Badges -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">Sélectionner l'activité / les activités</label>
+        <div id="activityChipsContainer" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-2 bg-slate-950 rounded-2xl border border-slate-800">
+          <!-- Dynamic Activity Badges -->
+        </div>
+      </div>
+
+      <!-- Day Selection -->
+      <div class="space-y-1">
+        <label class="block text-xs font-semibold text-slate-300">Jour de la semaine</label>
+        <select id="eventDay" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500">
+          <option value="Lundi">Lundi</option>
+          <option value="Mardi">Mardi</option>
+          <option value="Mercredi">Mercredi</option>
+          <option value="Jeudi">Jeudi</option>
+          <option value="Vendredi">Vendredi</option>
+        </select>
+      </div>
+
+      <!-- Time Selection with Datalist Suggestions -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Heure de début</label>
+          <input type="text" id="eventStart" list="timesList" placeholder="ex: 08:00" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Heure de fin</label>
+          <input type="text" id="eventEnd" list="timesList" placeholder="ex: 10:00" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <datalist id="timesList">
+        <option value="08:00"><option value="09:00"><option value="10:00"><option value="11:00">
+        <option value="12:00"><option value="13:00"><option value="14:00"><option value="15:00">
+        <option value="16:00"><option value="17:00"><option value="18:00">
+      </datalist>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+        <button id="btnDeleteEvent" onclick="deleteEvent()" class="hidden bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-bold py-2.5 px-4 rounded-xl transition">Supprimer</button>
+        <div class="flex-grow"></div>
+        <button onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl transition">Annuler</button>
+        <button onclick="saveEvent()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TÉLÉCHARGER & EXPORTATION -->
+  <div id="downloadModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="glass-modal w-full max-w-md rounded-3xl p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-extrabold text-white">Options de Téléchargement</h3>
+        <button onclick="closeDownloadModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Export PNG -->
+        <button onclick="exportToPNG()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700/80 p-3.5 rounded-2xl flex items-center gap-3 transition text-left group">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center group-hover:scale-110 transition"><i class="fa-solid fa-file-image text-lg"></i></div>
+          <div>
+            <div class="text-sm font-bold text-white">Image PNG HD</div>
+            <div class="text-xs text-slate-400">Capture complète du planning avec le titre en haut</div>
+          </div>
+        </button>
+
+        <!-- Export JSON -->
+        <button onclick="exportToJSON()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700/80 p-3.5 rounded-2xl flex items-center gap-3 transition text-left group">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition"><i class="fa-solid fa-file-code text-lg"></i></div>
+          <div>
+            <div class="text-sm font-bold text-white">Sauvegarde JSON</div>
+            <div class="text-xs text-slate-400">Exporter vos données pour les réimporter plus tard</div>
+          </div>
+        </button>
+
+        <!-- Import JSON -->
+        <label class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700/80 p-3.5 rounded-2xl flex items-center gap-3 transition text-left cursor-pointer group">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition"><i class="fa-solid fa-file-import text-lg"></i></div>
+          <div>
+            <div class="text-sm font-bold text-white">Importer un fichier JSON</div>
+            <div class="text-xs text-slate-400">Restaurer des activités et créneaux sauvegardés</div>
+          </div>
+          <input type="file" id="jsonFileInput" accept=".json" onchange="importJSON(event)" class="hidden">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN GUARD OVERLAY (STRICT GOOGLE AUTH ONLY) -->
+  <div id="loginGuardOverlay" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4">
+    <div class="relative z-10 w-full max-w-md bg-slate-900/90 border border-slate-800 p-8 rounded-3xl shadow-2xl text-center space-y-6">
+      
+      <!-- App Badge -->
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-inner">
+        <i class="fa-solid fa-calendar-days text-2xl"></i>
+      </div>
+
       <div class="space-y-2">
         <h2 class="text-2xl font-extrabold text-white tracking-tight">Planning BTS - Espace Sécurisé</h2>
-        <p class="text-xs text-slate-400 leading-relaxed">Veuillez vous connecter avec votre compte Google pour accéder à votre emploi du temps, vos devoirs et vos fiches de révision.</p>
+        <p class="text-xs text-slate-400 leading-relaxed">Veuillez vous connecter avec votre compte Google pour accéder à votre emploi du temps et vos devoirs.</p>
       </div>
 
       <div class="space-y-3 pt-2">
-        <!-- Google Sign-In Button -->
+        <!-- Google Sign-In Button ONLY -->
         <button onclick="handleGoogleLogin()" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 px-5 rounded-2xl shadow-lg transition flex items-center justify-center gap-3 text-sm hover:scale-[1.02] active:scale-[0.98]">
           <i class="fa-brands fa-google text-red-500 text-base"></i>
           <span>Se connecter avec Google</span>
         </button>
       </div>
 
-      <p class="text-[10px] text-slate-500 italic">Vos données sont sauvegardées en toute sécurité dans le cloud.</p>
+      <!-- Error Message Box -->
+      <div id="loginErrorMessage" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-left"></div>
+
+      <p class="text-[10px] text-slate-500 italic">Vos données sont automatiquement synchronisées dans le Cloud.</p>
     </div>
   </div>
 
-  <!-- Ambient Organic Glow Blobs -->
-<!-- ... existing code ... -->
-          const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-          let userCred = null;
-          if (initialToken) {
-            try {
-              userCred = await signInWithCustomToken(auth, initialToken);
-            } catch (authErr) {
-              console.warn("signInWithCustomToken non disponible:", authErr);
-            }
-          }
-          if (userCred) {
-            currentUser = userCred.user;
-          }
-        } catch (authInitErr) {
-          console.warn("Firebase Auth non configuré sur ce projet, utilisation du fallback UID:", authInitErr);
-        }
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-        if (currentUser && !currentUser.isAnonymous) {
-          const cloudIdInput = document.getElementById('userCloudIdInput');
-          if (cloudIdInput) cloudIdInput.value = currentUser.uid;
-          setupFirestoreListener(currentUser.uid);
-          window.hideLoginGuard();
-        } else {
-          window.showLoginGuard();
-        }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        updateCloudStatusUI('online', 'Firestore Connecté');
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBi88C3uSn8xB1qCb7JtLDJsid9IW3PnvA",
+      authDomain: "app-planning-563a6.firebaseapp.com",
+      projectId: "app-planning-563a6",
+      storageBucket: "app-planning-563a6.firebasestorage.app",
+      messagingSenderId: "618508192586",
+      appId: "1:618508192586:web:9aa4fc534ea559ab0bcfb3"
+    };
 
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'app-planning-563a6';
+
+    // Global State Object
+    window.state = {
+      header: {
+        title: "Planning & Agenda Hebdomadaire",
+        subtitle: "ORGANISATION GÉNÉRALE DES COURS, TRAVAUX DIRIGÉS & ÉVÉNEMENTS"
+      },
+      activities: {},
+      events: [],
+      datedEvents: [],
+      tasks: []
+    };
+
+    window.currentUser = null;
+    let selectedModalActivities = [];
+    let firestoreUnsubscribe = null;
+
+    // Global Save State to Firestore
+    window.saveStateToCloud = async function() {
+      if (!window.currentUser) return;
+      try {
+        const userDocRef = doc(db, 'artifacts', appId, 'users', window.currentUser.uid, 'user_schedule', 'main_data');
+        await setDoc(userDocRef, {
+          header: window.state.header || {},
+          activities: window.state.activities || {},
+          events: window.state.events || [],
+          datedEvents: window.state.datedEvents || [],
+          tasks: window.state.tasks || [],
+          updatedAt: Date.now()
+        }, { merge: true });
       } catch (err) {
-<!-- ... existing code ... -->
-```
+        console.error("Firestore Save Error:", err);
+      }
+    };
 
-### 🛠️ Ce qui a été fait :
-- La page de connexion (Login Guard) ne comporte à présent que le bouton **"Se connecter avec Google"**.
-- Les options d'accès par clé manuelle et le mode invité ont été retirés.
-- L'application exige désormais une authentification Google valide pour déverrouiller le planning.
+    // Setup Firestore Snapshot Listener
+    function setupFirestoreListener(userId) {
+      if (firestoreUnsubscribe) firestoreUnsubscribe();
+
+      const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'user_schedule', 'main_data');
+      firestoreUnsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          window.state.header = data.header || window.state.header;
+          window.state.activities = data.activities || {};
+          window.state.events = data.events || [];
+          window.state.datedEvents = data.datedEvents || [];
+          window.state.tasks = data.tasks || [];
+          
+          window.renderAllViews();
+        } else {
+          // New user document -> save current state
+          window.saveStateToCloud();
+        }
+      }, (error) => {
+        console.error("Firestore Listener Error:", error);
+      });
+    }
+
+    // Google Sign-In Function
+    window.handleGoogleLogin = async function() {
+      const errDiv = document.getElementById('loginErrorMessage');
+      if (errDiv) errDiv.classList.add('hidden');
+
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        
+        const result = await signInWithPopup(auth, provider);
+        window.currentUser = result.user;
+        updateAuthUI(window.currentUser);
+        setupFirestoreListener(window.currentUser.uid);
+        window.hideLoginGuard();
+        showToast(`Bienvenue, ${window.currentUser.displayName || 'Utilisateur'} !`, 'success');
+      } catch (err) {
+        console.error("Google Auth Error:", err);
+        let msg = "Erreur de connexion Google.";
+        
+        if (err.code === 'auth/popup-blocked') {
+          msg = "La fenêtre pop-up Google a été bloquée par votre navigateur. Veuillez autoriser les fenêtres surgissantes pour ce site.";
+        } else if (err.code === 'auth/popup-closed-by-user') {
+          msg = "La fenêtre de connexion a été fermée avant la fin.";
+        } else if (err.code === 'auth/unauthorized-domain') {
+          const domain = window.location.hostname || window.location.host;
+          msg = `<strong>Domaine non autorisé dans Firebase :</strong><br><code class="bg-black/30 px-1.5 py-0.5 rounded text-amber-300 font-mono select-all">${domain}</code><br><br>Pour corriger cela :<ol class="list-decimal list-inside mt-1 space-y-1 text-[11px]"><li>Rendez-vous sur <a href="https://console.firebase.google.com/" target="_blank" class="underline text-indigo-300">Firebase Console</a></li><li>Allez dans <b>Authentication</b> &gt; <b>Settings</b> &gt; <b>Authorized domains</b></li><li>Cliquez sur <b>Add domain</b> et ajoutez <code class="font-mono text-amber-300">${domain}</code></li></ol>`;
+        } else if (err.code === 'auth/operation-not-allowed') {
+          msg = "La connexion Google n'est pas activée sur votre projet Firebase. Activez-la dans Firebase Console (Authentication > Sign-in method > Google).";
+        } else {
+          msg = `Erreur Google: ${err.message || 'Impossible de se connecter.'}`;
+        }
+
+        if (errDiv) {
+          errDiv.innerHTML = msg;
+          errDiv.classList.remove('hidden');
+        }
+      }
+    };
+
+    // Handle Authentication State Changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.currentUser = user;
+        updateAuthUI(user);
+        setupFirestoreListener(user.uid);
+        window.hideLoginGuard();
+      } else {
+        window.currentUser = null;
+        updateAuthUI(null);
+        window.showLoginGuard();
+      }
+    });
+
+    function updateAuthUI(user) {
+      const btn = document.getElementById('googleAuthBtn');
+      const label = document.getElementById('authBtnLabel');
+      if (!btn || !label) return;
+
+      if (user) {
+        label.innerText = user.displayName ? user.displayName.split(' ')[0] : 'Connecté';
+        btn.onclick = () => {
+          signOut(auth);
+          showToast("Déconnecté", "info");
+        };
+      } else {
+        label.innerText = "Connexion Google";
+        btn.onclick = () => window.handleGoogleLogin();
+      }
+    }
+
+    const daysList = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+
+    // Helper: Convert time string "HH:MM" or "HhMM" to minutes for chronologic sorting
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const clean = timeStr.replace('h', ':').replace('H', ':');
+      const parts = clean.split(':');
+      const hours = parseInt(parts[0], 10) || 0;
+      const mins = parseInt(parts[1], 10) || 0;
+      return hours * 60 + mins;
+    }
+
+    // Helper: Darken text color for contrast
+    function getContrastTextColor(hex) {
+      if (!hex || typeof hex !== 'string') return '#0f172a';
+      let cleanHex = hex.replace('#', '');
+      if (cleanHex.length === 3) cleanHex = cleanHex.split('').map(c => c + c).join('');
+      const r = parseInt(cleanHex.substr(0, 2), 16) || 0;
+      const g = parseInt(cleanHex.substr(2, 2), 16) || 0;
+      const b = parseInt(cleanHex.substr(4, 2), 16) || 0;
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.6 ? '#0f172a' : '#ffffff';
+    }
+
+    // Render Weekly Schedule Grid
+    window.renderSchedule = function() {
+      const grid = document.getElementById('scheduleGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      daysList.forEach(day => {
+        const dayCol = document.createElement('div');
+        dayCol.className = 'glass-card rounded-2xl p-3 flex flex-col gap-3 min-h-[400px] border border-slate-800/80';
+        
+        // Day Header
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'text-center font-extrabold text-xs tracking-wider text-slate-300 uppercase py-2 border-b border-slate-800 bg-slate-900/40 rounded-xl';
+        dayHeader.innerText = day;
+        dayCol.appendChild(dayHeader);
+
+        // Sort events chronologically by start time
+        let dayEvents = (window.state.events || []).filter(e => e.day === day);
+        dayEvents.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+        if (dayEvents.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'flex-grow flex items-center justify-center text-slate-600 text-[11px] italic py-8';
+          empty.innerText = 'Aucun cours créné';
+          dayCol.appendChild(empty);
+        } else {
+          dayEvents.forEach(e => {
+            const titles = Array.isArray(e.titles) ? e.titles : [e.title];
+            const primaryTitle = titles[0] || 'Activité';
+            const actInfo = window.state.activities[primaryTitle] || {};
+            const bg = typeof actInfo === 'string' ? actInfo : (actInfo.color || '#38bdf8');
+            const icon = actInfo.icon || 'fa-book';
+            const textColor = getContrastTextColor(bg);
+
+            const card = document.createElement('div');
+            card.className = 'p-3 rounded-xl cursor-pointer transition transform hover:-translate-y-0.5 hover:shadow-lg space-y-1.5 border border-white/10';
+            card.style.backgroundColor = bg;
+            card.style.color = textColor;
+            card.onclick = () => window.openModal(e.id);
+
+            const displayTitles = titles.join(' + ');
+            const timeText = e.end ? `${e.start} - ${e.end}` : `${e.start}`;
+
+            card.innerHTML = `
+              <div class="flex items-center justify-between text-[10px] font-bold opacity-90 border-b border-black/10 pb-1">
+                <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${timeText}</span>
+              </div>
+              <div class="flex items-center gap-2 pt-0.5">
+                <i class="fa-solid ${icon} text-sm"></i>
+                <span class="font-extrabold text-xs sm:text-sm leading-normal">${displayTitles}</span>
+              </div>
+            `;
+            dayCol.appendChild(card);
+          });
+        }
+
+        grid.appendChild(dayCol);
+      });
+    };
+
+    // Render Activities Manager Grid
+    window.renderManager = function() {
+      const grid = document.getElementById('activitiesGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const keys = Object.keys(window.state.activities || {});
+      if (keys.length === 0) {
+        grid.innerHTML = `<p class="col-span-full text-slate-500 text-xs italic py-4">Aucune activité enregistrée.</p>`;
+        return;
+      }
+
+      keys.forEach(title => {
+        const info = window.state.activities[title];
+        const bg = typeof info === 'string' ? info : (info.color || '#38bdf8');
+        const icon = typeof info === 'object' ? (info.icon || 'fa-book') : 'fa-book';
+        const textColor = getContrastTextColor(bg);
+
+        const card = document.createElement('div');
+        card.className = 'flex items-center justify-between p-3 rounded-xl font-bold shadow-md cursor-pointer transition hover:scale-[1.02] border border-white/10';
+        card.style.backgroundColor = bg;
+        card.style.color = textColor;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5 text-xs sm:text-sm">
+            <i class="fa-solid ${icon}"></i>
+            <span>${title}</span>
+          </div>
+          <button onclick="event.stopPropagation(); deleteActivity('${title}')" class="w-6 h-6 rounded-lg bg-black/20 hover:bg-black/40 text-inherit flex items-center justify-center text-xs transition">
+            ✕
+          </button>
+        `;
+        card.onclick = () => editActivityPrompt(title);
+        grid.appendChild(card);
+      });
+    };
+
+    // Render All Views Sync
+    window.renderAllViews = function() {
+      document.getElementById('mainTitle').innerText = window.state.header.title || "Planning & Agenda Hebdomadaire";
+      document.getElementById('subTitle').innerText = window.state.header.subtitle || "ORGANISATION GÉNÉRALE DES COURS";
+      window.renderSchedule();
+      window.renderManager();
+    };
+
+    // Create New Activity
+    window.createNewActivity = function() {
+      const titleInput = document.getElementById('newActivityTitle');
+      const colorInput = document.getElementById('newActivityColor');
+      const iconSelect = document.getElementById('newActivityIcon');
+
+      const title = titleInput.value.trim();
+      if (!title) {
+        showToast("Veuillez saisir un nom d'activité", "error");
+        return;
+      }
+
+      window.state.activities[title] = {
+        color: colorInput.value,
+        icon: iconSelect.value
+      };
+
+      titleInput.value = '';
+      window.saveStateToCloud();
+      window.renderAllViews();
+      showToast(`Activité "${title}" créée`, "success");
+    };
+
+    window.deleteActivity = function(title) {
+      delete window.state.activities[title];
+      window.saveStateToCloud();
+      window.renderAllViews();
+      showToast(`Activité "${title}" supprimée`, "info");
+    };
+
+    function editActivityPrompt(title) {
+      const current = window.state.activities[title] || {};
+      const newTitle = prompt("Modifier le nom de l'activité:", title);
+      if (newTitle && newTitle.trim()) {
+        const cleanTitle = newTitle.trim();
+        if (cleanTitle !== title) {
+          window.state.activities[cleanTitle] = current;
+          delete window.state.activities[title];
+          // Update events referencing this activity
+          (window.state.events || []).forEach(e => {
+            if (Array.isArray(e.titles)) {
+              e.titles = e.titles.map(t => t === title ? cleanTitle : t);
+            }
+          });
+        }
+        window.saveStateToCloud();
+        window.renderAllViews();
+      }
+    }
+
+    // Slot Modal Handler
+    window.openModal = function(id = null) {
+      const modal = document.getElementById('eventModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      selectedModalActivities = [];
+      const chipsContainer = document.getElementById('activityChipsContainer');
+      chipsContainer.innerHTML = '';
+
+      const actKeys = Object.keys(window.state.activities || {});
+      if (actKeys.length === 0) {
+        chipsContainer.innerHTML = `<span class="text-slate-500 text-xs italic">Aucune activité disponible. Créez-en une ci-dessous.</span>`;
+      } else {
+        actKeys.forEach(actTitle => {
+          const info = window.state.activities[actTitle];
+          const bg = typeof info === 'string' ? info : (info.color || '#38bdf8');
+          const icon = typeof info === 'object' ? (info.icon || 'fa-book') : 'fa-book';
+
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = `activity-chip flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-300`;
+          chip.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${actTitle}</span> <i class="fa-solid fa-check hidden text-xs"></i>`;
+
+          chip.onclick = () => {
+            if (selectedModalActivities.includes(actTitle)) {
+              selectedModalActivities = selectedModalActivities.filter(t => t !== actTitle);
+              chip.classList.remove('selected', 'bg-indigo-600', 'text-white', 'border-indigo-500');
+              chip.querySelector('.fa-check').classList.add('hidden');
+            } else {
+              selectedModalActivities.push(actTitle);
+              chip.classList.add('selected', 'bg-indigo-600', 'text-white', 'border-indigo-500');
+              chip.querySelector('.fa-check').classList.remove('hidden');
+            }
+          };
+
+          chipsContainer.appendChild(chip);
+        });
+      }
+
+      if (id) {
+        const event = (window.state.events || []).find(e => e.id === id);
+        document.getElementById('eventModalTitle').innerText = "Modifier le créneau";
+        document.getElementById('eventId').value = event.id;
+        document.getElementById('eventDay').value = event.day;
+        document.getElementById('eventStart').value = event.start;
+        document.getElementById('eventEnd').value = event.end || '';
+        document.getElementById('btnDeleteEvent').classList.remove('hidden');
+
+        selectedModalActivities = Array.isArray(event.titles) ? [...event.titles] : [event.title];
+        
+        // Highlight active chips
+        Array.from(chipsContainer.children).forEach(chip => {
+          const text = chip.querySelector('span')?.innerText;
+          if (text && selectedModalActivities.includes(text)) {
+            chip.classList.add('selected', 'bg-indigo-600', 'text-white', 'border-indigo-500');
+            chip.querySelector('.fa-check')?.classList.remove('hidden');
+          }
+        });
+      } else {
+        document.getElementById('eventModalTitle').innerText = "Nouveau créneau";
+        document.getElementById('eventId').value = '';
+        document.getElementById('eventStart').value = '08:00';
+        document.getElementById('eventEnd').value = '10:00';
+        document.getElementById('btnDeleteEvent').classList.add('hidden');
+      }
+    };
+
+    window.closeModal = function() {
+      const modal = document.getElementById('eventModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.saveEvent = function() {
+      const id = document.getElementById('eventId').value;
+      const day = document.getElementById('eventDay').value;
+      const start = document.getElementById('eventStart').value.trim();
+      const end = document.getElementById('eventEnd').value.trim();
+
+      if (selectedModalActivities.length === 0) {
+        showToast("Sélectionnez au moins une activité", "error");
+        return;
+      }
+
+      if (!start) {
+        showToast("Veuillez indiquer une heure de début", "error");
+        return;
+      }
+
+      if (id) {
+        const index = window.state.events.findIndex(e => e.id === id);
+        if (index !== -1) {
+          window.state.events[index] = { id, day, titles: selectedModalActivities, start, end };
+        }
+      } else {
+        window.state.events.push({ id: Date.now().toString(), day, titles: selectedModalActivities, start, end });
+      }
+
+      window.saveStateToCloud();
+      window.renderAllViews();
+      window.closeModal();
+      showToast("Créneau enregistré", "success");
+    };
+
+    window.deleteEvent = function() {
+      const id = document.getElementById('eventId').value;
+      window.state.events = (window.state.events || []).filter(e => e.id !== id);
+      window.saveStateToCloud();
+      window.renderAllViews();
+      window.closeModal();
+      showToast("Créneau supprimé", "info");
+    };
+
+    // Gemini AI Revision Generator
+    window.generateAISheet = async function() {
+      const promptText = document.getElementById('aiPromptInput').value.trim();
+      const docType = document.getElementById('aiDocType').value;
+      const fileInput = document.getElementById('aiFileInput');
+      const outputDiv = document.getElementById('aiOutputContent');
+      const actionsDiv = document.getElementById('aiActions');
+
+      if (!promptText && (!fileInput.files || fileInput.files.length === 0)) {
+        showToast("Saisissez des consignes ou déposez un fichier", "error");
+        return;
+      }
+
+      outputDiv.innerHTML = `<div class="py-12 text-center space-y-3"><i class="fa-solid fa-spinner fa-spin text-3xl text-teal-400"></i><p class="text-xs text-slate-400">Analyse de vos données et génération par l'IA Gemini...</p></div>`;
+
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        let parts = [];
+        const systemInstruction = `Vous êtes un assistant pédagogique de haut niveau expert en BTS. Générez un document clair, parfaitement structuré et synthétique au format HTML lisible selon le type demandé: ${docType}. Utilisez des titres <h3>, des listes <ul>, <li> et des mises en gras <strong> pour une lisibilité parfaite.`;
+
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const base64Data = await fileToBase64(file);
+          const mimeType = file.type || "text/plain";
+          parts.push({
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Data.split(',')[1]
+            }
+          });
+        }
+
+        parts.push({ text: `Consignes / Matière: ${promptText || "Générer la fiche complète d'après le document."}` });
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: parts }],
+            systemInstruction: { parts: [{ text: systemInstruction }] }
+          })
+        });
+
+        const data = await response.json();
+        const textResult = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (textResult) {
+          outputDiv.innerHTML = textResult;
+          actionsDiv.classList.remove('hidden');
+          showToast("Fiche générée avec succès !", "success");
+        } else {
+          outputDiv.innerHTML = `<p class="text-red-400">Erreur lors de la génération. Veuillez réessayer.</p>`;
+        }
+      } catch (err) {
+        console.error("AI Generation Error:", err);
+        outputDiv.innerHTML = `<p class="text-red-400">Erreur réseau ou API: ${err.message}</p>`;
+      }
+    };
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    window.copyAIText = function() {
+      const text = document.getElementById('aiOutputContent').innerText;
+      navigator.clipboard.writeText(text);
+      showToast("Texte copié dans le presse-papier", "info");
+    };
+
+    window.downloadAIPDF = function() {
+      const content = document.getElementById('aiOutputContent').innerHTML;
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+          <head>
+            <title>Fiche de Révision BTS</title>
+            <style>
+              body { font-family: sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+              h3 { color: #0f172a; border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; }
+              ul { padding-left: 20px; }
+              li { margin-bottom: 6px; }
+            </style>
+          </head>
+          <body>
+            ${content}
+            <script>window.print();</` + `script>
+          </body>
+        </html>
+      `);
+      win.document.close();
+    };
+
+    // PNG Export
+    window.exportToPNG = function() {
+      window.closeDownloadModal();
+      showToast("Génération de l'image PNG...", "info");
+
+      const element = document.getElementById('scheduleCaptureContainer');
+      document.getElementById('pngHeaderTitle').innerText = window.state.header.title;
+      document.getElementById('pngHeaderSubtitle').innerText = window.state.header.subtitle;
+
+      html2canvas(element, {
+        backgroundColor: '#0b0f19',
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `planning_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast("Image PNG téléchargée !", "success");
+      });
+    };
+
+    // JSON Export & Import
+    window.exportToJSON = function() {
+      window.closeDownloadModal();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.state, null, 2));
+      const link = document.createElement('a');
+      link.setAttribute("href", dataStr);
+      link.setAttribute("download", `bts_planning_backup.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast("Fichier JSON exporté", "success");
+    };
+
+    window.importJSON = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.activities || imported.events) {
+            window.state = imported;
+            window.saveStateToCloud();
+            window.renderAllViews();
+            window.closeDownloadModal();
+            showToast("Données importées avec succès !", "success");
+          }
+        } catch (err) {
+          showToast("Fichier JSON invalide", "error");
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    // Modals & Navigation Helpers
+    window.openDownloadModal = function() {
+      document.getElementById('downloadModal').classList.remove('hidden');
+      document.getElementById('downloadModal').classList.add('flex');
+    };
+    window.closeDownloadModal = function() {
+      document.getElementById('downloadModal').classList.add('hidden');
+      document.getElementById('downloadModal').classList.remove('flex');
+    };
+
+    window.showLoginGuard = function() {
+      document.getElementById('loginGuardOverlay').style.display = 'flex';
+    };
+    window.hideLoginGuard = function() {
+      document.getElementById('loginGuardOverlay').style.display = 'none';
+    };
+
+    window.switchTab = function(tabName) {
+      const views = ['schedule', 'agenda', 'tasks', 'ai'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        const btnEl = document.getElementById(`tabBtn-${v}`);
+        if (viewEl && btnEl) {
+          if (v === tabName) {
+            viewEl.classList.remove('hidden');
+            btnEl.className = 'tab-btn px-4 py-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition';
+          } else {
+            viewEl.classList.add('hidden');
+            btnEl.className = 'tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition';
+          }
+        }
+      });
+    };
+
+    window.saveHeaderTitle = function() {
+      window.state.header.title = document.getElementById('mainTitle').innerText.trim() || "Planning Hebdomadaire";
+      window.saveStateToCloud();
+    };
+
+    window.saveHeaderSubtitle = function() {
+      window.state.header.subtitle = document.getElementById('subTitle').innerText.trim() || "BTS ORGANISATION";
+      window.saveStateToCloud();
+    };
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `p-3 rounded-xl text-xs font-bold text-white shadow-xl transition transform translate-y-2 pointer-events-auto flex items-center gap-2 ${
+        type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-800 border border-slate-700'
+      }`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Initial render
+    window.renderAllViews();
+  </script>
+</body>
+</html>
