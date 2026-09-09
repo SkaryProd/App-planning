@@ -944,38 +944,59 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'planning-bts-app';
 
     async function initCloudSync() {
-      if (typeof __firebase_config === 'undefined' || !__firebase_config) {
-        updateCloudStatusUI('offline', 'Local seul');
-        return;
-      }
+      const firebaseConfig = {
+        apiKey: "AIzaSyBi88C3uSn8xB1qCb7JtLDJsid9IW3PnvA",
+        authDomain: "app-planning-563a6.firebaseapp.com",
+        projectId: "app-planning-563a6",
+        storageBucket: "app-planning-563a6.firebasestorage.app",
+        messagingSenderId: "618508192586",
+        appId: "1:618508192586:web:9aa4fc534ea559ab0bcfb3"
+      };
 
       try {
-        const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
         db = getFirestore(app);
 
-        const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        let userCred;
-        if (initialToken) {
-          userCred = await signInWithCustomToken(auth, initialToken);
-        } else {
-          userCred = await signInAnonymously(auth);
+        try {
+          auth = getAuth(app);
+          const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+          let userCred = null;
+          if (initialToken) {
+            try {
+              userCred = await signInWithCustomToken(auth, initialToken);
+            } catch (authErr) {
+              console.warn("signInWithCustomToken non disponible:", authErr);
+            }
+          }
+          if (!userCred) {
+            try {
+              userCred = await signInAnonymously(auth);
+            } catch (authErr) {
+              console.warn("signInAnonymously non disponible:", authErr);
+            }
+          }
+          if (userCred) {
+            currentUser = userCred.user;
+          }
+        } catch (authInitErr) {
+          console.warn("Firebase Auth non configuré sur ce projet, utilisation du fallback UID:", authInitErr);
         }
-        currentUser = userCred.user;
 
-        if (!currentUser) return;
+        let activeUid = currentUser ? currentUser.uid : null;
+        if (!activeUid) {
+          activeUid = localStorage.getItem('bts_device_uid') || ('user_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36));
+          localStorage.setItem('bts_device_uid', activeUid);
+        }
 
-        const activeUid = localStorage.getItem('bts_custom_sync_uid') || currentUser.uid;
         const cloudIdInput = document.getElementById('userCloudIdInput');
         if (cloudIdInput) cloudIdInput.value = activeUid;
 
-        updateCloudStatusUI('online', 'Cloud Actif');
+        updateCloudStatusUI('online', 'Firestore Connecté');
         setupFirestoreListener(activeUid);
 
       } catch (err) {
-        console.error("Initialisation Firebase échouée:", err);
-        updateCloudStatusUI('offline', 'Mode Local');
+        console.error("Initialisation Firestore échouée:", err);
+        updateCloudStatusUI('error', 'Erreur Firestore');
       }
     }
 
@@ -988,47 +1009,38 @@
       unsubscribeListener = onSnapshot(userDocRef, (snapshot) => {
         if (snapshot.exists()) {
           const cloudData = snapshot.data();
-          const localUpdatedAt = localStorage.getItem('bts_app_updated_at') || '1970-01-01T00:00:00.000Z';
-          const cloudUpdatedAt = cloudData.updatedAt || '1970-01-01T00:00:00.000Z';
-
           if (cloudData && !isApplyingCloudUpdate) {
-            // If local changes are newer than cloud timestamp, push local to cloud first
-            if (new Date(localUpdatedAt) > new Date(cloudUpdatedAt)) {
-              window.saveToCloud();
-            } else {
-              applyCloudData(cloudData);
-            }
+            applyCloudData(cloudData);
           }
         } else {
-          // Initial sync for new cloud document
           window.saveToCloud();
         }
       }, (error) => {
         console.error("Erreur de synchronisation Firestore:", error);
-        updateCloudStatusUI('error', 'Erreur Cloud');
+        updateCloudStatusUI('error', 'Erreur Sync');
       });
     }
 
     window.saveToCloud = async function() {
-      if (!db || !currentUser) return;
+      if (!db) return;
       try {
         updateCloudStatusUI('syncing', 'Enregistrement...');
-        const activeUid = localStorage.getItem('bts_custom_sync_uid') || currentUser.uid;
+        const activeUid = currentUser ? currentUser.uid : (document.getElementById('userCloudIdInput')?.value || 'default_user');
         const userDocRef = doc(db, 'artifacts', appId, 'users', activeUid, 'data', 'planning');
         
         const payload = {
-          headerData: window.state.headerData,
-          activities: window.state.activities,
-          events: window.state.events,
-          datedEvents: window.state.datedEvents,
-          tasks: window.state.tasks,
-          updatedAt: window.state.updatedAt
+          headerData: window.state.headerData || {},
+          activities: window.state.activities || {},
+          events: window.state.events || [],
+          datedEvents: window.state.datedEvents || [],
+          tasks: window.state.tasks || [],
+          updatedAt: window.state.updatedAt || new Date().toISOString()
         };
 
         await setDoc(userDocRef, payload, { merge: true });
-        updateCloudStatusUI('online', 'Cloud Actif');
+        updateCloudStatusUI('online', 'Firestore Connecté');
       } catch (err) {
-        console.error("Erreur d'écriture Cloud:", err);
+        console.error("Erreur d'écriture Firestore:", err);
         updateCloudStatusUI('error', 'Erreur Sync');
       }
     };
@@ -1042,14 +1054,6 @@
         if (cloudData.datedEvents) window.state.datedEvents = cloudData.datedEvents;
         if (cloudData.tasks) window.state.tasks = cloudData.tasks;
         if (cloudData.updatedAt) window.state.updatedAt = cloudData.updatedAt;
-
-        // Save locally to mirror
-        localStorage.setItem('bts_app_header', JSON.stringify(window.state.headerData));
-        localStorage.setItem('bts_app_activities', JSON.stringify(window.state.activities));
-        localStorage.setItem('bts_app_events', JSON.stringify(window.state.events));
-        localStorage.setItem('bts_app_dated_events', JSON.stringify(window.state.datedEvents));
-        localStorage.setItem('bts_app_tasks', JSON.stringify(window.state.tasks));
-        localStorage.setItem('bts_app_updated_at', window.state.updatedAt);
 
         // Refresh UI
         if (typeof window.loadHeaderUI === 'function') window.loadHeaderUI();
@@ -1071,26 +1075,19 @@
 
       if (status === 'online') {
         dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-        text.innerText = labelText || "Cloud Actif";
+        text.innerText = labelText || "Firestore Connecté";
         if (modalState) {
-          modalState.innerText = "Connecté & Synchronisé";
+          modalState.innerText = "Connecté à Firestore";
           modalState.className = "px-2.5 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
         }
       } else if (status === 'syncing') {
         dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-spin";
         text.innerText = labelText || "Sync...";
-      } else if (status === 'offline') {
-        dot.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
-        text.innerText = labelText || "Local Seul";
-        if (modalState) {
-          modalState.innerText = "Hors ligne (Stockage local)";
-          modalState.className = "px-2.5 py-1 rounded-full font-bold bg-slate-800 text-slate-400 border border-slate-700";
-        }
       } else if (status === 'error') {
         dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-        text.innerText = labelText || "Erreur Cloud";
+        text.innerText = labelText || "Erreur Sync";
         if (modalState) {
-          modalState.innerText = "Erreur de connexion";
+          modalState.innerText = "Erreur de connexion Firestore";
           modalState.className = "px-2.5 py-1 rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30";
         }
       }
@@ -1105,13 +1102,13 @@
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
-      if (typeof window.showToast === 'function') window.showToast("Clé de synchronisation copiée !");
+      if (typeof window.showToast === 'function') window.showToast("Clé Firestore copiée !");
     };
 
     window.manualCloudSync = async function() {
       if (typeof window.saveToCloud === 'function') {
         await window.saveToCloud();
-        if (typeof window.showToast === 'function') window.showToast("Synchronisation Cloud forcée !");
+        if (typeof window.showToast === 'function') window.showToast("Synchronisation Firestore effectuée !");
       }
     };
 
@@ -1126,17 +1123,16 @@
         const remoteDocRef = doc(db, 'artifacts', appId, 'users', key, 'data', 'planning');
         const snap = await getDoc(remoteDocRef);
         if (snap.exists()) {
-          localStorage.setItem('bts_custom_sync_uid', key);
           applyCloudData(snap.data());
           setupFirestoreListener(key);
-          if (typeof window.showToast === 'function') window.showToast("Compte Cloud connecté & synchronisé !");
+          if (typeof window.showToast === 'function') window.showToast("Compte Firestore connecté & synchronisé !");
           if (typeof window.closeModal === 'function') window.closeModal('cloudModal');
         } else {
           if (typeof window.showToast === 'function') window.showToast("Aucune donnée trouvée pour cette clé.", "warning");
         }
       } catch (err) {
         console.error("Erreur de chargement distant:", err);
-        if (typeof window.showToast === 'function') window.showToast("Erreur de récupération Cloud", "warning");
+        if (typeof window.showToast === 'function') window.showToast("Erreur de récupération Firestore", "warning");
       }
     };
 
@@ -1186,12 +1182,12 @@
 
     /* Central Reactive App State */
     window.state = {
-      headerData: JSON.parse(localStorage.getItem('bts_app_header')) || DEFAULT_HEADER,
-      activities: JSON.parse(localStorage.getItem('bts_app_activities')) || {},
-      events: JSON.parse(localStorage.getItem('bts_app_events')) || [],
-      datedEvents: JSON.parse(localStorage.getItem('bts_app_dated_events')) || [],
-      tasks: JSON.parse(localStorage.getItem('bts_app_tasks')) || [],
-      updatedAt: localStorage.getItem('bts_app_updated_at') || new Date().toISOString()
+      headerData: DEFAULT_HEADER,
+      activities: {},
+      events: [],
+      datedEvents: [],
+      tasks: [],
+      updatedAt: new Date().toISOString()
     };
 
     /* Expose direct accessors on window to prevent shadow local variable scope bugs */
@@ -1202,23 +1198,16 @@
     Object.defineProperty(window, 'tasks', { get() { return window.state.tasks; }, set(v) { window.state.tasks = v; }, configurable: true });
 
     let currentMainTab = 'planning';
-    let viewMode = localStorage.getItem('bts_view_mode') || '5days';
+    let viewMode = '5days';
     let dialogResolver = null;
     let draggedEventId = null;
     let currentGeneratedMarkdown = "";
     let uploadedFileData = null;
 
-    /* Local Storage Sync */
+    /* Firestore Storage Sync */
     function saveStorage() {
       const now = new Date().toISOString();
       window.state.updatedAt = now;
-      localStorage.setItem('bts_app_updated_at', now);
-      localStorage.setItem('bts_app_header', JSON.stringify(window.state.headerData));
-      localStorage.setItem('bts_app_activities', JSON.stringify(window.state.activities));
-      localStorage.setItem('bts_app_events', JSON.stringify(window.state.events));
-      localStorage.setItem('bts_app_dated_events', JSON.stringify(window.state.datedEvents));
-      localStorage.setItem('bts_app_tasks', JSON.stringify(window.state.tasks));
-      localStorage.setItem('bts_view_mode', viewMode);
 
       if (typeof window.saveToCloud === 'function') {
         window.saveToCloud();
@@ -1294,7 +1283,6 @@
     /* View Switcher Handler */
     function setViewMode(mode) {
       viewMode = mode;
-      saveStorage();
 
       document.getElementById('viewBtn5').className = viewMode === '5days' ? 'px-3 py-1.5 rounded-lg transition text-white bg-indigo-600' : 'px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white';
       document.getElementById('viewBtn7').className = viewMode === '7days' ? 'px-3 py-1.5 rounded-lg transition text-white bg-indigo-600' : 'px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white';
@@ -2280,7 +2268,6 @@
     async function confirmResetAll() {
       const confirmed = await showCustomConfirm("Êtes-vous sûr de vouloir tout réinitialiser ? Toutes vos données seront effacées.");
       if (confirmed) {
-        localStorage.clear();
         window.state.headerData = DEFAULT_HEADER;
         window.state.activities = {};
         window.state.events = [];
