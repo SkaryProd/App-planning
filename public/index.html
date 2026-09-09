@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planning & Agenda Hebdomadaire BTS</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome CDN for expanded icon library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- html2pdf.js CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- html2canvas CDN for PNG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            darkbg: '#080c14',
+            cardbg: 'rgba(15, 23, 42, 0.65)',
+            accent: '#6366f1',
+          },
+          animation: {
+            'blob': 'blob 10s infinite ease-in-out',
+            'fade-in': 'fadeIn 0.25s ease-out forwards',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          },
+          keyframes: {
+            blob: {
+              '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
+              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-20px, 20px) scale(0.95)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(15px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.7);
+    }
+
+    /* Soft Organic Glassmorphism */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-input {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: #6366f1;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    /* Editable Text Headers */
+    .editable-header[contenteditable="true"]:hover,
+    .editable-header[contenteditable="true"]:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Drag and Drop Visual Feedback */
+    .dragging {
+      opacity: 0.4;
+      transform: scale(0.96);
+    }
+    .drag-over {
+      background-color: rgba(99, 102, 241, 0.18) !important;
+      border: 2px dashed #6366f1 !important;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .schedule-container {
+        grid-template-columns: repeat(5, 1fr) !important;
+        width: 100% !important;
+      }
+      .glass-panel, .event-card {
+        border: 1px solid #ccc !important;
+        background: #f8fafc !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-[#080c14] text-slate-100 min-h-screen font-sans relative overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <!-- Ambient Organic Glow Blobs -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none animate-blob"></div>
+  <div class="fixed bottom-10 right-10 w-[450px] h-[450px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none animate-blob" style="animation-delay: 2s;"></div>
+  <div class="fixed top-1/2 left-10 w-80 h-80 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none animate-blob" style="animation-delay: 4s;"></div>
+
+  <div class="max-w-[1650px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 relative z-10">
+
+    <!-- Top Organic Header -->
+    <header class="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="text-center md:text-left space-y-2 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
+          <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
+          <span>Espace d'Organisation BTS</span>
+        </div>
+        <h1 id="mainTitle" class="editable-header text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent cursor-pointer" contenteditable="true" title="Cliquer pour modifier le titre" onblur="saveHeaderData()">
+          Planning & Agenda Hebdomadaire
+        </h1>
+        <p id="subTitle" class="editable-header text-slate-400 text-sm font-medium cursor-pointer" contenteditable="true" title="Cliquer pour modifier la description" onblur="saveHeaderData()">
+          Organisation générale des cours, travaux dirigés & événements
+        </p>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 z-10">
+        <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Générer un fichier</span>
+        </button>
+        <button onclick="openDatedEventModal()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-sky-600/25 hover:shadow-sky-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-calendar-day"></i>
+          <span>Ajouter un Événement</span>
+        </button>
+        <button onclick="openEventModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-plus"></i>
+          <span>Créneau</span>
+        </button>
+        <button onclick="openModal('downloadModal')" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-amber-600/25 hover:shadow-amber-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-download"></i>
+          <span>Télécharger</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation & Action Toolbar -->
+    <div class="no-print relative z-[80] space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4 glass-panel p-2.5 rounded-2xl">
+        <!-- Main Navigation Pills -->
+        <nav class="flex items-center gap-1.5 p-1 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-x-auto w-full sm:w-auto">
+          <button id="tabPlanning" onclick="switchMainTab('planning')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow">
+            <i class="fa-solid fa-calendar-week"></i> Planning Type
+          </button>
+          <button id="tabAgenda" onclick="switchMainTab('agenda')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-clock text-sky-400"></i> Agenda Daté
+            <span id="agendaCountBadge" class="bg-sky-500/20 text-sky-300 text-[10px] px-1.5 py-0.2 rounded-full hidden">0</span>
+          </button>
+          <button id="tabHomework" onclick="switchMainTab('homework')" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-list-check text-emerald-400"></i> Devoirs & Projets
+            <span id="taskCounterBadge" class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full hidden">0</span>
+          </button>
+        </nav>
+
+        <!-- Right Side Tools -->
+        <div class="flex items-center gap-2.5 ml-auto">
+          <!-- View switchers for planning view -->
+          <div id="planningViewSwitchers" class="bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 flex items-center gap-1 text-xs font-medium">
+            <button id="viewBtn5" onclick="setViewMode('5days')" class="px-3 py-1.5 rounded-lg transition text-white bg-indigo-600/80">5 Jours</button>
+            <button id="viewBtn7" onclick="setViewMode('7days')" class="px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white">7 Jours</button>
+          </div>
+
+          <!-- Cloud Sync Status Badge -->
+          <button id="cloudStatusBtn" onclick="openModal('cloudModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-2 border border-slate-700/60">
+            <span id="cloudDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="cloudStatusText" class="hidden sm:inline">Cloud Actif</span>
+          </button>
+
+          <!-- Stats Drawer Trigger -->
+          <button onclick="openModal('statsModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60">
+            <i class="fa-solid fa-chart-pie text-sky-400"></i> Stats
+          </button>
+
+          <!-- Activities Manager Trigger -->
+          <button onclick="openModal('managerModal')" class="glass-card hover:bg-slate-800/60 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5 border border-slate-700/60">
+            <i class="fa-solid fa-palette text-pink-400"></i> Activités
+          </button>
+
+          <!-- Options Dropdown Menu -->
+          <div class="relative inline-block text-left">
+            <button onclick="toggleDropdown('moreMenu')" class="glass-card hover:bg-slate-800/60 p-2 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center border border-slate-700/60">
+              <i class="fa-solid fa-ellipsis-vertical px-1"></i>
+            </button>
+            
+            <div id="moreMenu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl glass-panel shadow-2xl py-2 z-[200] border border-slate-700/80 divide-y divide-slate-800">
+              <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Options & Modèles</div>
+              <button onclick="openModal('templatesModal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-shapes text-indigo-400 w-4"></i> Charger Modèle BTS
+              </button>
+              <button onclick="exportToICS()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-plus text-emerald-400 w-4"></i> Exporter en .ICS
+              </button>
+              <button onclick="window.print()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-print text-amber-400 w-4"></i> Imprimer / PDF
+              </button>
+              <div class="py-1"></div>
+              <button onclick="exportJSONBackup()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-download text-sky-400 w-4"></i> Sauvegarder (JSON)
+              </button>
+              <button onclick="triggerJSONImport()" class="w-full text-left px-4 py-2.5 text-xs text-slate-200 hover:bg-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-upload text-violet-400 w-4"></i> Importer une sauvegarde
+              </button>
+              <input type="file" id="jsonFileInput" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+              <div class="py-1"></div>
+              <button onclick="confirmResetAll()" class="w-full text-left px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-500/20 flex items-center gap-2 font-semibold">
+                <i class="fa-solid fa-trash-can w-4"></i> Réinitialiser tout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <!-- TAB 1: Weekly Planning View -->
+      <div id="viewPlanning" class="tab-content">
+        <div id="scheduleContainer" class="schedule-container grid gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 2: Specific Dated Agenda View -->
+      <div id="viewAgenda" class="tab-content hidden space-y-4">
+        <div class="flex items-center justify-between glass-panel p-4 rounded-2xl">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-calendar-day text-sky-400"></i> Événements & Examens Datés
+            </h2>
+            <p class="text-xs text-slate-400">Plannifiez vos devoirs surveillés, contrôles, TP spéciaux ou réunions à des dates précises</p>
+          </div>
+          <button onclick="openDatedEventModal()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-plus"></i> Ajouter un événement
+          </button>
+        </div>
+
+        <div id="datedEventsList" class="space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 3: Homework & Projects Agenda View -->
+      <div id="viewHomework" class="tab-content hidden space-y-4">
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Agenda des Devoirs & Projets à Rendre
+              </h2>
+              <p class="text-xs text-slate-400">Suivez l'avancement de vos travaux personnels, TP et comptes-rendus</p>
+            </div>
+            <button onclick="openModal('newTaskModal')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Planifier un devoir
+            </button>
+          </div>
+
+          <!-- Homework Cards Container -->
+          <div id="homeworkAgendaGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL: ADD / EDIT CRENEAU HEBDOMADAIRE -->
+  <div id="eventModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modalEventTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus text-indigo-400"></i> Créneau Hebdomadaire Type
+        </h3>
+        <button onclick="closeModal('eventModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="eventId">
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1.5">Activité(s) associée(s)</label>
+          <div id="activityCheckboxes" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto bg-slate-950/80 border border-slate-800 rounded-2xl p-3">
+            <!-- Populated dynamically as interactive bubbles -->
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Jour de la semaine</label>
+            <select id="eventDay" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <option value="Lundi">Lundi</option>
+              <option value="Mardi">Mardi</option>
+              <option value="Mercredi">Mercredi</option>
+              <option value="Jeudi">Jeudi</option>
+              <option value="Vendredi">Vendredi</option>
+              <option value="Samedi">Samedi</option>
+              <option value="Dimanche">Dimanche</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Heure de début</label>
+            <input type="text" id="eventStart" list="existingTimesList" placeholder="ex: 08:15" class="glass-input w-full p-2.5 rounded-xl text-xs" required>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Heure de fin</label>
+            <input type="text" id="eventEnd" list="existingTimesList" placeholder="ex: 10:15" class="glass-input w-full p-2.5 rounded-xl text-xs">
+          </div>
+        </div>
+
+        <datalist id="existingTimesList">
+          <!-- Populated dynamically -->
+        </datalist>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Note ou détails</label>
+          <input type="text" id="eventNote" placeholder="ex: Groupe A, Matériel spécifique..." class="glass-input w-full p-2.5 rounded-xl text-xs">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+        <button id="btnDeleteEvent" onclick="deleteEvent()" class="hidden px-4 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-xl font-bold text-xs transition border border-rose-500/30">
+          Supprimer
+        </button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button onclick="closeModal('eventModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+            Annuler
+          </button>
+          <button onclick="saveEvent()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition shadow-lg shadow-indigo-600/30">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT DATED EVENT -->
+  <div id="datedEventModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modalDatedTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-day text-sky-400"></i> Planifier un Événement Daté
+        </h3>
+        <button onclick="closeModal('datedEventModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="datedEventId">
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nom de l'événement / Examen</label>
+          <input type="text" id="datedEventTitleInput" placeholder="ex: DS Cybersécurité, TP Noté, Soutenance..." class="glass-input w-full p-2.5 rounded-xl text-xs" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Activité liée</label>
+            <select id="datedEventActSelect" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Icône de l'événement</label>
+            <select id="datedEventIconSelect" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <!-- Expanded icons selection -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Date précise</label>
+            <input type="date" id="datedEventDateInput" class="glass-input w-full p-2.5 rounded-xl text-xs" required>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Heure début</label>
+            <input type="time" id="datedEventStartInput" class="glass-input w-full p-2.5 rounded-xl text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Heure fin</label>
+            <input type="time" id="datedEventEndInput" class="glass-input w-full p-2.5 rounded-xl text-xs">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Salle / Lieu</label>
+            <input type="text" id="datedEventRoomInput" placeholder="ex: Salle B20, Labo 3" class="glass-input w-full p-2.5 rounded-xl text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Important / Tag</label>
+            <select id="datedEventTagInput" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <option value="Examen">🔴 Examen / DS</option>
+              <option value="TP Noté">🟠 TP Noté</option>
+              <option value="Projet">🔵 Projet / Soutenance</option>
+              <option value="Événement">🟢 Événement général</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Détails ou consigne</label>
+          <input type="text" id="datedEventNoteInput" placeholder="ex: Chapitres 1 à 4 à réviser, apportez calculatrice..." class="glass-input w-full p-2.5 rounded-xl text-xs">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+        <button id="btnDeleteDatedEvent" onclick="deleteDatedEvent()" class="hidden px-4 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-xl font-bold text-xs transition border border-rose-500/30">
+          Supprimer
+        </button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button onclick="closeModal('datedEventModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+            Annuler
+          </button>
+          <button onclick="saveDatedEvent()" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold text-xs transition shadow-lg shadow-sky-600/30">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT HOMEWORK -->
+  <div id="newTaskModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-file-pen text-emerald-400"></i> Planifier un Devoir à Rendre
+        </h3>
+        <button onclick="closeModal('newTaskModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nom du devoir ou travail à rendre</label>
+          <input type="text" id="newTaskTitle" placeholder="ex: Compte-rendu TP Réseaux, Exercices Math..." class="glass-input w-full p-2.5 rounded-xl text-xs" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Activité / Matière</label>
+            <select id="newTaskActivity" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Priorité</label>
+            <select id="newTaskPriority" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <option value="Haute">🔥 Haute (Urgent)</option>
+              <option value="Normale" selected>⚡ Normale</option>
+              <option value="Basse">🌱 Basse</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Date d'échéance / Rendu</label>
+          <input type="date" id="newTaskDate" class="glass-input w-full p-2.5 rounded-xl text-xs" required>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Consigne ou détails</label>
+          <textarea id="newTaskNote" rows="3" placeholder="Description des consignes, consignes de dépôt PDF..." class="glass-input w-full p-2.5 rounded-xl text-xs"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+        <button onclick="closeModal('newTaskModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+          Annuler
+        </button>
+        <button onclick="addNewTask()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition shadow-lg shadow-emerald-600/30">
+          Enregistrer le devoir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GESTIONNAIRE D'ACTIVITÉS -->
+  <div id="managerModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-palette text-pink-400"></i> Gestionnaire des Activités
+        </h3>
+        <button onclick="closeModal('managerModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto space-y-5 pr-1 flex-grow">
+        <!-- New Activity Creation Form -->
+        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Créer une activité</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+            <input type="text" id="newActTitle" placeholder="Nom" class="glass-input p-2.5 rounded-xl text-xs sm:col-span-5">
+            
+            <div class="sm:col-span-4 flex items-center gap-2">
+              <select id="newActIcon" class="glass-input p-2.5 rounded-xl text-xs w-full">
+                <!-- Expanded Icon Choices -->
+              </select>
+            </div>
+
+            <div class="sm:col-span-3 flex items-center gap-2">
+              <input type="color" id="newActColor" value="#38bdf8" class="w-10 h-9 rounded-xl cursor-pointer bg-transparent border-0">
+              <button onclick="createNewActivity()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow">
+                + Créer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Activités enregistrées</h4>
+            <span class="text-[11px] text-slate-500 italic">Cliquez pour modifier</span>
+          </div>
+          <div id="activitiesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 text-right flex-shrink-0">
+        <button onclick="closeModal('managerModal')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT ACTIVITY -->
+  <div id="editActivityModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-4 animate-slide-up">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-indigo-400"></i> Modifier l'activité
+        </h3>
+        <button onclick="closeModal('editActivityModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editActId">
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nom de l'activité</label>
+          <input type="text" id="editActTitle" class="glass-input w-full p-2.5 rounded-xl">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Icône</label>
+            <select id="editActIcon" class="glass-input w-full p-2.5 rounded-xl">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Couleur</label>
+            <input type="color" id="editActColor" class="w-full h-9 rounded-xl cursor-pointer bg-transparent border-0 mt-1">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+        <button onclick="saveActivityChanges()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition shadow-lg shadow-indigo-600/30">
+          Enregistrer les modifications
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STATISTIQUES DES HEURES -->
+  <div id="statsModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-sky-400"></i> Volume Horaire Hebdomadaire
+        </h3>
+        <button onclick="closeModal('statsModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto space-y-4 pr-1 flex-grow">
+        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">Total de cours estimé cette semaine :</span>
+          <span id="totalWeeklyHours" class="text-xl font-extrabold text-indigo-400">0h</span>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Répartition par activité</h4>
+          <div id="statsBreakdown" class="space-y-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 text-right flex-shrink-0">
+        <button onclick="closeModal('statsModal')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GENERATEUR DE FICHE DE REVISION (IA GEMINI) -->
+  <div id="aiModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> Générer un fichier / Fiche de révision IA
+        </h3>
+        <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto space-y-4 pr-1 flex-grow">
+        <p class="text-xs text-slate-300">
+          Téléchargez un fichier ou collez le texte d'un cours/exercice pour créer automatiquement votre fiche de révision.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="block text-xs font-semibold text-slate-300">Consigne de révision</label>
+            <input type="text" id="aiPromptInput" placeholder="ex: Synthétise les définitions et formules essentielles" class="glass-input w-full p-2.5 rounded-xl text-xs">
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-slate-300">Format de sortie</label>
+            <select id="aiDocType" class="glass-input w-full p-2.5 rounded-xl text-xs">
+              <option value="Fiche de révision synthétique">Fiche de révision synthétique</option>
+              <option value="Fiche Formules & Définitions">Formules & Définitions clés</option>
+              <option value="Quiz & Questions-Réponses">Quiz / Questions - Réponses</option>
+              <option value="Résumé exécutif clair">Résumé structuré</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Importer un document / Photo de cours</label>
+          <div class="flex items-center gap-3">
+            <input type="file" id="aiFileInput" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp,.csv" onchange="handleAIFileUpload(event)" class="hidden">
+            <button onclick="document.getElementById('aiFileInput').click()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-paperclip text-emerald-400"></i> Choisir un fichier...
+            </button>
+            <div id="aiFileBadge" class="hidden items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-lg text-xs">
+              <span id="aiFileName" class="truncate max-w-[200px]"></span>
+              <button onclick="removeAIFile()" class="text-slate-400 hover:text-rose-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Texte du cours ou énoncé d'exercice</label>
+          <textarea id="aiSourceInput" rows="4" placeholder="Collez ici les notes de cours..." class="glass-input w-full p-3 rounded-xl text-xs font-mono"></textarea>
+        </div>
+
+        <button onclick="generateAISheet()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Générer la fiche de révision
+        </button>
+
+        <div id="aiLoading" class="hidden py-8 text-center space-y-3">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
+          <p class="text-xs text-emerald-400 font-semibold">Génération de la fiche en cours...</p>
+        </div>
+
+        <div id="aiResultContainer" class="hidden space-y-3 border-t border-slate-800 pt-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">Fiche générée</span>
+            <div class="flex items-center gap-2">
+              <button onclick="copyAIGeneratedText()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-regular fa-copy"></i> Copier
+              </button>
+              <button onclick="downloadAIGeneratedText()" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/30 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i> Texte (.txt)
+              </button>
+              <button onclick="downloadAIGeneratedPDF()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+              </button>
+            </div>
+          </div>
+
+          <div id="aiOutputText" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 text-xs text-slate-200 leading-relaxed space-y-2 overflow-x-auto">
+            <!-- Output -->
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 text-right flex-shrink-0">
+        <button onclick="closeModal('aiModal')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TEMPLATES -->
+  <div id="templatesModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-shapes text-indigo-400"></i> Modèles de planning
+        </h3>
+        <button onclick="closeModal('templatesModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <button onclick="loadTemplate('ciel')" class="w-full p-3.5 bg-slate-900/80 hover:bg-indigo-600/20 border border-slate-800 hover:border-indigo-500/50 rounded-2xl text-left transition space-y-1">
+          <div class="text-xs font-extrabold text-indigo-300">💻 BTS CIEL</div>
+          <div class="text-[11px] text-slate-400">Cybersécurité, Réseaux, Dev C++/Python, Mathématiques</div>
+        </button>
+
+        <button onclick="loadTemplate('sio')" class="w-full p-3.5 bg-slate-900/80 hover:bg-sky-600/20 border border-slate-800 hover:border-sky-500/50 rounded-2xl text-left transition space-y-1">
+          <div class="text-xs font-extrabold text-sky-300">🌐 BTS SIO</div>
+          <div class="text-[11px] text-slate-400">Dev SLAM/BDD, Réseaux SISR, Droit IT, Anglais</div>
+        </button>
+
+        <button onclick="loadTemplate('blank')" class="w-full p-3.5 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-2xl text-left transition space-y-1">
+          <div class="text-xs font-extrabold text-slate-300">📄 Planning Vierge</div>
+          <div class="text-[11px] text-slate-500">Effacer tous les créneaux et réinitialiser</div>
+        </button>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="closeModal('templatesModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TELECHARGER & EXPORTER / IMPORTER -->
+  <div id="downloadModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-download text-amber-400"></i> Options de Téléchargement & Importation
+        </h3>
+        <button onclick="closeModal('downloadModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <p class="text-slate-300">Choisissez le format dans lequel vous souhaitez télécharger votre planning ou réimporter vos données sauvegardées.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Download PNG -->
+          <button onclick="exportToPNG(); closeModal('downloadModal');" class="p-4 bg-slate-900/80 hover:bg-amber-600/20 border border-slate-800 hover:border-amber-500/50 rounded-2xl text-left transition space-y-1.5 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
+              <i class="fa-solid fa-file-image text-base"></i> Image PNG
+            </div>
+            <div class="text-[11px] text-slate-400">Capture d'écran haute définition de votre planning.</div>
+          </button>
+
+          <!-- Download HTML -->
+          <button onclick="exportToHTML(); closeModal('downloadModal');" class="p-4 bg-slate-900/80 hover:bg-sky-600/20 border border-slate-800 hover:border-sky-500/50 rounded-2xl text-left transition space-y-1.5 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-sky-400 font-extrabold text-xs">
+              <i class="fa-solid fa-file-code text-base"></i> Page HTML
+            </div>
+            <div class="text-[11px] text-slate-400">Application web autonome complète avec vos données.</div>
+          </button>
+
+          <!-- Download JSON -->
+          <button onclick="exportJSONBackup(); closeModal('downloadModal');" class="p-4 bg-slate-900/80 hover:bg-emerald-600/20 border border-slate-800 hover:border-emerald-500/50 rounded-2xl text-left transition space-y-1.5 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-emerald-400 font-extrabold text-xs">
+              <i class="fa-solid fa-file-json text-base"></i> Sauvegarde JSON
+            </div>
+            <div class="text-[11px] text-slate-400">Exportation complète de vos activités, créneaux et devoirs.</div>
+          </button>
+
+          <!-- Import JSON -->
+          <button onclick="triggerJSONImport(); closeModal('downloadModal');" class="p-4 bg-slate-900/80 hover:bg-violet-600/20 border border-slate-800 hover:border-violet-500/50 rounded-2xl text-left transition space-y-1.5 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-violet-400 font-extrabold text-xs">
+              <i class="fa-solid fa-upload text-base"></i> Importer un JSON
+            </div>
+            <div class="text-[11px] text-slate-400">Restaurer vos activités et planning sauvegardés dans un fichier JSON.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 text-right border-t border-slate-800">
+        <button onclick="closeModal('downloadModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CLOUD SYNC & SAUVEGARDE EN LIGNE -->
+  <div id="cloudModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-sky-400"></i> Sauvegarde & Synchro Cloud
+        </h3>
+        <button onclick="closeModal('cloudModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-300">État du Cloud :</span>
+            <span id="modalCloudState" class="px-2.5 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Connecté & Synchronisé</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Vos créneaux, devoirs et activités sont automatiquement enregistrés et synchronisés en temps réel dans le cloud.</p>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block font-semibold text-slate-300">Votre Clé de Synchronisation Unique</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="userCloudIdInput" readonly class="glass-input w-full p-2.5 rounded-xl font-mono text-[11px] select-all">
+            <button onclick="copyCloudUserId()" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex-shrink-0 transition">
+              <i class="fa-regular fa-copy mr-1"></i> Copier
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-500">Utilisez cette clé pour charger ou synchroniser votre planning sur un autre appareil.</p>
+        </div>
+
+        <div class="border-t border-slate-800 pt-3 space-y-2">
+          <label class="block font-semibold text-slate-300">Lier un autre appareil / Restaurer depuis le Cloud</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="remoteCloudIdInput" placeholder="Entrez la clé de synchronisation..." class="glass-input w-full p-2.5 rounded-xl font-mono text-[11px]">
+            <button onclick="loadRemoteCloudData()" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold flex-shrink-0 transition">
+              Charger
+            </button>
+          </div>
+        </div>
+
+        <button onclick="manualCloudSync()" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold rounded-xl transition shadow flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate"></i> Forcer la synchronisation Cloud
+        </button>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="closeModal('cloudModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM DIALOG -->
+  <div id="customDialog" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-4 animate-slide-up text-center">
+      <div id="dialogIcon" class="w-12 h-12 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+        <i class="fa-solid fa-circle-question"></i>
+      </div>
+      <h3 id="dialogTitle" class="text-base font-bold text-white">Confirmation</h3>
+      <p id="dialogMessage" class="text-xs text-slate-300">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+      
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button id="dialogCancelBtn" onclick="resolveDialog(false)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs transition">
+          Annuler
+        </button>
+        <button id="dialogConfirmBtn" onclick="resolveDialog(true)" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition">
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-[250] flex flex-col gap-2 pointer-events-none"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let isApplyingCloudUpdate = false;
+    let unsubscribeListener = null;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'planning-bts-app';
+
+    async function initCloudSync() {
+      if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+        updateCloudStatusUI('offline', 'Local seul');
+        return;
+      }
+
+      try {
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        let userCred;
+        if (initialToken) {
+          userCred = await signInWithCustomToken(auth, initialToken);
+        } else {
+          userCred = await signInAnonymously(auth);
+        }
+        currentUser = userCred.user;
+
+        if (!currentUser) return;
+
+        const activeUid = localStorage.getItem('bts_custom_sync_uid') || currentUser.uid;
+        const cloudIdInput = document.getElementById('userCloudIdInput');
+        if (cloudIdInput) cloudIdInput.value = activeUid;
+
+        updateCloudStatusUI('online', 'Cloud Actif');
+        setupFirestoreListener(activeUid);
+
+      } catch (err) {
+        console.error("Initialisation Firebase échouée:", err);
+        updateCloudStatusUI('offline', 'Mode Local');
+      }
+    }
+
+    function setupFirestoreListener(targetUid) {
+      if (!db) return;
+      if (unsubscribeListener) unsubscribeListener();
+
+      const userDocRef = doc(db, 'artifacts', appId, 'users', targetUid, 'data', 'planning');
+
+      unsubscribeListener = onSnapshot(userDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const cloudData = snapshot.data();
+          const localUpdatedAt = localStorage.getItem('bts_app_updated_at') || '1970-01-01T00:00:00.000Z';
+          const cloudUpdatedAt = cloudData.updatedAt || '1970-01-01T00:00:00.000Z';
+
+          if (cloudData && !isApplyingCloudUpdate) {
+            // If local changes are newer than cloud timestamp, push local to cloud first
+            if (new Date(localUpdatedAt) > new Date(cloudUpdatedAt)) {
+              window.saveToCloud();
+            } else {
+              applyCloudData(cloudData);
+            }
+          }
+        } else {
+          // Initial sync for new cloud document
+          window.saveToCloud();
+        }
+      }, (error) => {
+        console.error("Erreur de synchronisation Firestore:", error);
+        updateCloudStatusUI('error', 'Erreur Cloud');
+      });
+    }
+
+    window.saveToCloud = async function() {
+      if (!db || !currentUser) return;
+      try {
+        updateCloudStatusUI('syncing', 'Enregistrement...');
+        const activeUid = localStorage.getItem('bts_custom_sync_uid') || currentUser.uid;
+        const userDocRef = doc(db, 'artifacts', appId, 'users', activeUid, 'data', 'planning');
+        
+        const payload = {
+          headerData: window.state.headerData,
+          activities: window.state.activities,
+          events: window.state.events,
+          datedEvents: window.state.datedEvents,
+          tasks: window.state.tasks,
+          updatedAt: window.state.updatedAt
+        };
+
+        await setDoc(userDocRef, payload, { merge: true });
+        updateCloudStatusUI('online', 'Cloud Actif');
+      } catch (err) {
+        console.error("Erreur d'écriture Cloud:", err);
+        updateCloudStatusUI('error', 'Erreur Sync');
+      }
+    };
+
+    function applyCloudData(cloudData) {
+      isApplyingCloudUpdate = true;
+      try {
+        if (cloudData.headerData) window.state.headerData = cloudData.headerData;
+        if (cloudData.activities) window.state.activities = cloudData.activities;
+        if (cloudData.events) window.state.events = cloudData.events;
+        if (cloudData.datedEvents) window.state.datedEvents = cloudData.datedEvents;
+        if (cloudData.tasks) window.state.tasks = cloudData.tasks;
+        if (cloudData.updatedAt) window.state.updatedAt = cloudData.updatedAt;
+
+        // Save locally to mirror
+        localStorage.setItem('bts_app_header', JSON.stringify(window.state.headerData));
+        localStorage.setItem('bts_app_activities', JSON.stringify(window.state.activities));
+        localStorage.setItem('bts_app_events', JSON.stringify(window.state.events));
+        localStorage.setItem('bts_app_dated_events', JSON.stringify(window.state.datedEvents));
+        localStorage.setItem('bts_app_tasks', JSON.stringify(window.state.tasks));
+        localStorage.setItem('bts_app_updated_at', window.state.updatedAt);
+
+        // Refresh UI
+        if (typeof window.loadHeaderUI === 'function') window.loadHeaderUI();
+        if (typeof window.renderActiveTab === 'function') window.renderActiveTab();
+        if (typeof window.renderManagerGrid === 'function') window.renderManagerGrid();
+        if (typeof window.updateTaskBadge === 'function') window.updateTaskBadge();
+        if (typeof window.updateAgendaBadge === 'function') window.updateAgendaBadge();
+      } finally {
+        setTimeout(() => { isApplyingCloudUpdate = false; }, 300);
+      }
+    }
+
+    function updateCloudStatusUI(status, labelText) {
+      const dot = document.getElementById('cloudDot');
+      const text = document.getElementById('cloudStatusText');
+      const modalState = document.getElementById('modalCloudState');
+
+      if (!dot || !text) return;
+
+      if (status === 'online') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+        text.innerText = labelText || "Cloud Actif";
+        if (modalState) {
+          modalState.innerText = "Connecté & Synchronisé";
+          modalState.className = "px-2.5 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        }
+      } else if (status === 'syncing') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-spin";
+        text.innerText = labelText || "Sync...";
+      } else if (status === 'offline') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+        text.innerText = labelText || "Local Seul";
+        if (modalState) {
+          modalState.innerText = "Hors ligne (Stockage local)";
+          modalState.className = "px-2.5 py-1 rounded-full font-bold bg-slate-800 text-slate-400 border border-slate-700";
+        }
+      } else if (status === 'error') {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        text.innerText = labelText || "Erreur Cloud";
+        if (modalState) {
+          modalState.innerText = "Erreur de connexion";
+          modalState.className = "px-2.5 py-1 rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        }
+      }
+    }
+
+    window.copyCloudUserId = function() {
+      const input = document.getElementById('userCloudIdInput');
+      if (!input || !input.value) return;
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = input.value;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      if (typeof window.showToast === 'function') window.showToast("Clé de synchronisation copiée !");
+    };
+
+    window.manualCloudSync = async function() {
+      if (typeof window.saveToCloud === 'function') {
+        await window.saveToCloud();
+        if (typeof window.showToast === 'function') window.showToast("Synchronisation Cloud forcée !");
+      }
+    };
+
+    window.loadRemoteCloudData = async function() {
+      const key = document.getElementById('remoteCloudIdInput').value.trim();
+      if (!key || !db) {
+        if (typeof window.showToast === 'function') window.showToast("Veuillez saisir une clé valide", "warning");
+        return;
+      }
+      try {
+        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+        const remoteDocRef = doc(db, 'artifacts', appId, 'users', key, 'data', 'planning');
+        const snap = await getDoc(remoteDocRef);
+        if (snap.exists()) {
+          localStorage.setItem('bts_custom_sync_uid', key);
+          applyCloudData(snap.data());
+          setupFirestoreListener(key);
+          if (typeof window.showToast === 'function') window.showToast("Compte Cloud connecté & synchronisé !");
+          if (typeof window.closeModal === 'function') window.closeModal('cloudModal');
+        } else {
+          if (typeof window.showToast === 'function') window.showToast("Aucune donnée trouvée pour cette clé.", "warning");
+        }
+      } catch (err) {
+        console.error("Erreur de chargement distant:", err);
+        if (typeof window.showToast === 'function') window.showToast("Erreur de récupération Cloud", "warning");
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', initCloudSync);
+  </script>
+
+  <script>
+    /* Expanded Icon Palette Choices */
+    const ICON_LIST = [
+      { id: 'fa-book', name: '📚 Livre / Cours' },
+      { id: 'fa-laptop-code', name: '💻 Dev / Code' },
+      { id: 'fa-shield-halved', name: '🔒 Cybersécurité' },
+      { id: 'fa-calculator', name: '🧮 Mathématiques' },
+      { id: 'fa-bolt', name: '⚡ Électronique' },
+      { id: 'fa-flask', name: '🔬 Sciences / TP' },
+      { id: 'fa-dumbbell', name: '🏋️ Sport' },
+      { id: 'fa-language', name: '🇬🇧 Langues' },
+      { id: 'fa-briefcase', name: '💼 Projets / Stage' },
+      { id: 'fa-graduation-cap', name: '🎓 Diplôme' },
+      { id: 'fa-brain', name: '🧠 Révisions' },
+      { id: 'fa-comments', name: '💬 Expression / Oral' },
+      { id: 'fa-pen-nib', name: '📝 Rédaction' },
+      { id: 'fa-gear', name: '🛠️ Technique / Labo' },
+      { id: 'fa-star', name: '⭐ Général' },
+      { id: 'fa-network-wired', name: '🌐 Réseaux & Infrastructure' },
+      { id: 'fa-microchip', name: '🔌 Microcontrôleurs' },
+      { id: 'fa-server', name: '🖥️ Serveurs & SysAdmin' },
+      { id: 'fa-database', name: '🗄️ Base de données' },
+      { id: 'fa-terminal', name: '⌨️ Ligne de commande' },
+      { id: 'fa-file-code', name: '📄 Scripting' },
+      { id: 'fa-circle-exclamation', name: '❗ Examen / DS' },
+      { id: 'fa-clock', name: '⏰ Horaire / Temps' },
+      { id: 'fa-lightbulb', name: '💡 Idée / Innovation' },
+      { id: 'fa-rocket', name: '🚀 Lancement / Soutenance' },
+      { id: 'fa-bell', name: '🔔 Rappel' },
+      { id: 'fa-list-check', name: '📋 Tâches' },
+      { id: 'fa-bullhorn', name: '📢 Annonce' },
+      { id: 'fa-user-group', name: '👥 Travail de Groupe' },
+    ];
+
+    const ALL_DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+    const DEFAULT_HEADER = {
+      title: "Planning & Agenda Hebdomadaire",
+      subtitle: "Organisation générale des cours, travaux dirigés & événements"
+    };
+
+    /* Central Reactive App State */
+    window.state = {
+      headerData: JSON.parse(localStorage.getItem('bts_app_header')) || DEFAULT_HEADER,
+      activities: JSON.parse(localStorage.getItem('bts_app_activities')) || {},
+      events: JSON.parse(localStorage.getItem('bts_app_events')) || [],
+      datedEvents: JSON.parse(localStorage.getItem('bts_app_dated_events')) || [],
+      tasks: JSON.parse(localStorage.getItem('bts_app_tasks')) || [],
+      updatedAt: localStorage.getItem('bts_app_updated_at') || new Date().toISOString()
+    };
+
+    /* Expose direct accessors on window to prevent shadow local variable scope bugs */
+    Object.defineProperty(window, 'headerData', { get() { return window.state.headerData; }, set(v) { window.state.headerData = v; }, configurable: true });
+    Object.defineProperty(window, 'activities', { get() { return window.state.activities; }, set(v) { window.state.activities = v; }, configurable: true });
+    Object.defineProperty(window, 'events', { get() { return window.state.events; }, set(v) { window.state.events = v; }, configurable: true });
+    Object.defineProperty(window, 'datedEvents', { get() { return window.state.datedEvents; }, set(v) { window.state.datedEvents = v; }, configurable: true });
+    Object.defineProperty(window, 'tasks', { get() { return window.state.tasks; }, set(v) { window.state.tasks = v; }, configurable: true });
+
+    let currentMainTab = 'planning';
+    let viewMode = localStorage.getItem('bts_view_mode') || '5days';
+    let dialogResolver = null;
+    let draggedEventId = null;
+    let currentGeneratedMarkdown = "";
+    let uploadedFileData = null;
+
+    /* Local Storage Sync */
+    function saveStorage() {
+      const now = new Date().toISOString();
+      window.state.updatedAt = now;
+      localStorage.setItem('bts_app_updated_at', now);
+      localStorage.setItem('bts_app_header', JSON.stringify(window.state.headerData));
+      localStorage.setItem('bts_app_activities', JSON.stringify(window.state.activities));
+      localStorage.setItem('bts_app_events', JSON.stringify(window.state.events));
+      localStorage.setItem('bts_app_dated_events', JSON.stringify(window.state.datedEvents));
+      localStorage.setItem('bts_app_tasks', JSON.stringify(window.state.tasks));
+      localStorage.setItem('bts_view_mode', viewMode);
+
+      if (typeof window.saveToCloud === 'function') {
+        window.saveToCloud();
+      }
+    }
+
+    /* Initialize Application */
+    window.onload = function() {
+      populateIconDropdowns();
+      loadHeaderUI();
+      renderActiveTab();
+      renderManagerGrid();
+      updateTaskBadge();
+      updateAgendaBadge();
+    };
+
+    /* Populate Icon Selectors */
+    function populateIconDropdowns() {
+      const selects = [
+        document.getElementById('newActIcon'),
+        document.getElementById('editActIcon'),
+        document.getElementById('datedEventIconSelect')
+      ];
+
+      selects.forEach(select => {
+        if (!select) return;
+        select.innerHTML = '';
+        ICON_LIST.forEach(icon => {
+          const opt = document.createElement('option');
+          opt.value = icon.id;
+          opt.innerText = icon.name;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    /* Header Editable Sync */
+    function loadHeaderUI() {
+      document.getElementById('mainTitle').innerText = window.state.headerData.title || "Planning & Agenda Hebdomadaire";
+      document.getElementById('subTitle').innerText = window.state.headerData.subtitle || "";
+    }
+
+    function saveHeaderData() {
+      window.state.headerData.title = document.getElementById('mainTitle').innerText.trim() || "Planning & Agenda Hebdomadaire";
+      window.state.headerData.subtitle = document.getElementById('subTitle').innerText.trim();
+      saveStorage();
+      showToast('Titre et description sauvegardés');
+    }
+
+    /* Tab Switcher Logic */
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+
+      document.getElementById('tabPlanning').className = tab === 'planning' ? 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow' : 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white';
+      document.getElementById('tabAgenda').className = tab === 'agenda' ? 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-sky-600 text-white shadow' : 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white';
+      document.getElementById('tabHomework').className = tab === 'homework' ? 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-emerald-600 text-white shadow' : 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white';
+
+      document.getElementById('viewPlanning').classList.toggle('hidden', tab !== 'planning');
+      document.getElementById('viewAgenda').classList.toggle('hidden', tab !== 'agenda');
+      document.getElementById('viewHomework').classList.toggle('hidden', tab !== 'homework');
+
+      document.getElementById('planningViewSwitchers').style.display = tab === 'planning' ? 'flex' : 'none';
+
+      renderActiveTab();
+    }
+
+    function renderActiveTab() {
+      if (currentMainTab === 'planning') renderSchedule();
+      else if (currentMainTab === 'agenda') renderDatedEvents();
+      else if (currentMainTab === 'homework') renderHomeworkAgenda();
+    }
+
+    /* View Switcher Handler */
+    function setViewMode(mode) {
+      viewMode = mode;
+      saveStorage();
+
+      document.getElementById('viewBtn5').className = viewMode === '5days' ? 'px-3 py-1.5 rounded-lg transition text-white bg-indigo-600' : 'px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white';
+      document.getElementById('viewBtn7').className = viewMode === '7days' ? 'px-3 py-1.5 rounded-lg transition text-white bg-indigo-600' : 'px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white';
+
+      renderSchedule();
+    }
+
+    /* Color utility */
+    function getDarkerTextColor(hexColor) {
+      if (!hexColor) return '#0f172a';
+      let hex = hexColor.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      
+      let r = parseInt(hex.substr(0, 2), 16);
+      let g = parseInt(hex.substr(2, 2), 16);
+      let b = parseInt(hex.substr(4, 2), 16);
+
+      r = Math.floor(r * 0.28);
+      g = Math.floor(g * 0.28);
+      b = Math.floor(b * 0.28);
+
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    /* Convert time strings (e.g., "08:15", "9:00", "14h30") to minutes for true chronological sorting */
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      let clean = timeStr.toLowerCase().replace('h', ':').trim();
+      let parts = clean.split(':');
+      let hours = parseInt(parts[0], 10) || 0;
+      let minutes = parseInt(parts[1], 10) || 0;
+      return hours * 60 + minutes;
+    }
+
+    /* Format time input consistently (e.g., "9:00" -> "09:00") */
+    function normalizeTimeInput(timeStr) {
+      if (!timeStr) return '';
+      let clean = timeStr.trim().replace('h', ':');
+      let parts = clean.split(':');
+      if (parts.length === 1 && !isNaN(parseInt(parts[0], 10))) {
+        let h = parseInt(parts[0], 10);
+        return (h < 10 ? '0' + h : h) + ':00';
+      }
+      if (parts.length >= 2) {
+        let h = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10);
+        if (!isNaN(h) && !isNaN(m)) {
+          return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+        }
+      }
+      return timeStr;
+    }
+
+    function getEventCardStyle(activityIds) {
+      const validIds = (activityIds || []).filter(id => window.state.activities[id]);
+      if (validIds.length === 0) {
+        return { background: '#38bdf8', textColor: '#0f172a', border: 'rgba(255,255,255,0.2)' };
+      }
+      if (validIds.length === 1) {
+        const bg = window.state.activities[validIds[0]].color;
+        return { background: bg, textColor: getDarkerTextColor(bg), border: 'rgba(255,255,255,0.25)' };
+      }
+      const colors = validIds.map(id => window.state.activities[id].color);
+      const gradient = `linear-gradient(135deg, ${colors.join(', ')})`;
+      const textColor = getDarkerTextColor(colors[0]);
+
+      return { background: gradient, textColor: textColor, border: 'rgba(255,255,255,0.25)' };
+    }
+
+    /* Render Weekly Planning Schedule */
+    function renderSchedule() {
+      const container = document.getElementById('scheduleContainer');
+      container.innerHTML = '';
+
+      const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
+
+      container.className = `schedule-container grid grid-cols-1 ${viewMode === '5days' ? 'md:grid-cols-5' : 'md:grid-cols-7'} gap-4`;
+
+      activeDays.forEach(day => {
+        const dayCol = document.createElement('div');
+        dayCol.className = 'glass-panel rounded-3xl flex flex-col overflow-hidden transition-all border border-slate-800 shadow-xl';
+        
+        dayCol.ondragover = (e) => { e.preventDefault(); dayCol.classList.add('drag-over'); };
+        dayCol.ondragleave = () => dayCol.classList.remove('drag-over');
+        dayCol.ondrop = (e) => handleDropEvent(e, day, dayCol);
+
+        let dayEvents = (window.state.events || []).filter(e => e.day === day);
+        dayEvents.sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+        let eventsHtml = dayEvents.map(e => {
+          const style = getEventCardStyle(e.activityIds);
+          
+          const actTitlesHtml = (e.activityIds || []).map(id => {
+            const act = window.state.activities[id];
+            if (!act) return '';
+            const iconClass = act.icon || 'fa-book';
+            return `
+              <div class="flex items-center gap-2 text-xs sm:text-sm font-extrabold leading-normal py-0.5">
+                <i class="fa-solid ${iconClass} text-xs opacity-80 flex-shrink-0"></i>
+                <span class="break-words leading-normal">${act.name}</span>
+              </div>`;
+          }).filter(Boolean).join('') || `<div class="text-xs font-extrabold opacity-80 py-0.5">Activité</div>`;
+
+          const timeText = e.end ? `${e.start.replace(':', 'h')} - ${e.end.replace(':', 'h')}` : `${e.start.replace(':', 'h')}`;
+          
+          return `
+            <div class="event-card rounded-2xl p-3.5 cursor-pointer shadow-md transition-all hover:scale-[1.02] hover:shadow-xl relative border overflow-visible flex flex-col justify-between gap-2"
+                 style="background: ${style.background}; border-color: ${style.border}; color: ${style.textColor};"
+                 draggable="true"
+                 ondragstart="handleDragStart(event, '${e.id}')"
+                 onclick="openEventModal('${e.id}')">
+              
+              <div class="flex items-center justify-between text-[11px] font-extrabold opacity-90 pb-1.5 border-b border-black/10">
+                <span class="inline-flex items-center gap-1.5"><i class="fa-regular fa-clock text-[10px]"></i> ${timeText}</span>
+                ${e.room ? `<span class="inline-flex items-center gap-1 text-[10px]"><i class="fa-solid fa-location-dot text-[9px]"></i>${e.room}</span>` : ''}
+              </div>
+
+              <div class="space-y-1 my-0.5 overflow-visible">${actTitlesHtml}</div>
+              
+              ${e.note ? `<div class="text-[11px] font-semibold opacity-80 italic flex items-center gap-1.5 pt-1 border-t border-black/10 break-words"><i class="fa-regular fa-note-sticky text-[10px] flex-shrink-0"></i> <span class="break-words">${e.note}</span></div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        dayCol.innerHTML = `
+          <div class="bg-slate-950/80 border-b border-slate-800 p-3 text-center flex items-center justify-between px-4">
+            <span class="font-extrabold text-xs tracking-wider uppercase text-slate-200">${day}</span>
+            <button onclick="openEventModalForDay('${day}')" class="no-print w-6 h-6 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/50 text-indigo-300 text-xs flex items-center justify-center transition" title="Ajouter un créneau">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <div class="p-2.5 flex flex-col gap-2.5 flex-grow min-h-[320px]">
+            ${eventsHtml || `<div class="h-full flex items-center justify-center text-slate-500 text-xs italic py-8">Aucun cours créné</div>`}
+          </div>
+        `;
+
+        container.appendChild(dayCol);
+      });
+    }
+
+    /* Render Specific Dated Events Agenda */
+    function renderDatedEvents() {
+      const container = document.getElementById('datedEventsList');
+      container.innerHTML = '';
+
+      let filtered = [...(window.state.datedEvents || [])];
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="glass-panel rounded-2xl p-8 text-center text-slate-400 text-xs italic">Aucun événement daté enregistré. Cliquez sur "Ajouter un événement" pour planifier un examen, TP ou soutenance.</div>`;
+        return;
+      }
+
+      filtered.sort((a,b) => (a.date + a.start).localeCompare(b.date + b.start));
+
+      filtered.forEach(ev => {
+        const act = window.state.activities[ev.actId];
+        const color = act?.color || '#38bdf8';
+        const icon = ev.icon || 'fa-calendar-day';
+
+        const eventDate = new Date(ev.date);
+        const formattedDate = eventDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+        const card = document.createElement('div');
+        card.className = "glass-panel rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-sky-500/50 transition cursor-pointer";
+        card.onclick = () => openDatedEventModal(ev.id);
+
+        card.innerHTML = `
+          <div class="flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md" style="background-color: ${color};">
+              <i class="fa-solid ${icon}"></i>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-extrabold text-sm text-white">${ev.title}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">${ev.tag || 'Événement'}</span>
+                ${act ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold text-black" style="background-color: ${color};">${act.name}</span>` : ''}
+              </div>
+              <div class="text-xs text-sky-300 font-semibold flex items-center gap-3 flex-wrap">
+                <span><i class="fa-regular fa-calendar mr-1"></i>${formattedDate}</span>
+                ${ev.start ? `<span><i class="fa-regular fa-clock mr-1"></i>${ev.start} ${ev.end ? '- ' + ev.end : ''}</span>` : ''}
+                ${ev.room ? `<span><i class="fa-solid fa-location-dot mr-1"></i>${ev.room}</span>` : ''}
+              </div>
+              ${ev.note ? `<p class="text-xs text-slate-400 italic">${ev.note}</p>` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 self-end sm:self-center">
+            <button onclick="event.stopPropagation(); openDatedEventModal('${ev.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition">
+              Modifier
+            </button>
+            <button onclick="event.stopPropagation(); deleteDatedEventById('${ev.id}')" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 rounded-xl text-xs font-semibold transition">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    /* Render Homework Agenda View */
+    function renderHomeworkAgenda() {
+      const container = document.getElementById('homeworkAgendaGrid');
+      container.innerHTML = '';
+
+      let filtered = [...(window.state.tasks || [])];
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs italic">Aucun devoir à rendre pour le moment. Cliquez sur "Planifier un devoir" ci-dessus.</div>`;
+        return;
+      }
+
+      filtered.sort((a,b) => (a.dueDate || '9999').localeCompare(b.dueDate || '9999'));
+
+      filtered.forEach(task => {
+        const act = window.state.activities[task.actId];
+        const color = act?.color || '#6366f1';
+
+        const card = document.createElement('div');
+        card.className = `glass-card p-4 rounded-2xl space-y-3 border transition ${task.completed ? 'opacity-50 bg-slate-950/40 border-slate-800' : 'border-slate-700 hover:border-emerald-500/50'}`;
+
+        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date().setHours(0,0,0,0) && !task.completed;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-4 h-4 accent-emerald-500 cursor-pointer">
+              <span class="font-bold text-xs ${task.completed ? 'line-through text-slate-400' : 'text-slate-100'}">${task.title}</span>
+            </div>
+            <button onclick="deleteTask('${task.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap text-[11px]">
+            ${act ? `<span class="px-2 py-0.5 rounded-full font-bold text-black" style="background-color: ${color};">${act.name}</span>` : ''}
+            <span class="px-2 py-0.5 rounded-full font-semibold ${task.priority === 'Haute' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-300'}">${task.priority || 'Normale'}</span>
+            ${task.dueDate ? `
+              <span class="px-2 py-0.5 rounded-full font-bold ${isOverdue ? 'bg-rose-600 text-white animate-pulse' : 'bg-slate-800 text-emerald-300'}">
+                <i class="fa-regular fa-calendar mr-1"></i> Pour le ${new Date(task.dueDate).toLocaleDateString('fr-FR')}
+              </span>
+            ` : ''}
+          </div>
+
+          ${task.note ? `<p class="text-xs text-slate-400 italic bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/80">${task.note}</p>` : ''}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    /* Drag and Drop event handling */
+    function handleDragStart(e, id) {
+      draggedEventId = id;
+      e.target.classList.add('dragging');
+    }
+
+    function handleDropEvent(e, targetDay, colEl) {
+      colEl.classList.remove('drag-over');
+      if (!draggedEventId) return;
+
+      const ev = (window.state.events || []).find(item => item.id === draggedEventId);
+      if (ev) {
+        ev.day = targetDay;
+        saveStorage();
+        renderSchedule();
+        showToast(`Créneau déplacé au ${targetDay}`);
+      }
+      draggedEventId = null;
+    }
+
+    /* Activities Manager Logic */
+    function renderManagerGrid() {
+      const grid = document.getElementById('activitiesGrid');
+      grid.innerHTML = '';
+
+      const keys = Object.keys(window.state.activities || {});
+      if (keys.length === 0) {
+        grid.innerHTML = `<p class="text-xs text-slate-500 italic col-span-2">Aucune activité enregistrée. Créez-en une ci-dessus.</p>`;
+        return;
+      }
+
+      keys.forEach(id => {
+        const act = window.state.activities[id];
+        const textColor = getDarkerTextColor(act.color);
+        const iconClass = act.icon || 'fa-book';
+
+        const card = document.createElement('div');
+        card.className = "flex items-center justify-between p-3 rounded-2xl font-bold shadow border transition cursor-pointer hover:scale-[1.01]";
+        card.style.backgroundColor = act.color;
+        card.style.color = textColor;
+        card.onclick = () => openEditActivityModal(id);
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2 truncate max-w-[170px]">
+            <i class="fa-solid ${iconClass}"></i>
+            <span class="text-xs truncate">${act.name}</span>
+          </div>
+          <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+            <button onclick="openEditActivityModal('${id}')" class="bg-black/20 hover:bg-black/40 text-current p-1 px-2 rounded-lg text-xs transition" title="Modifier">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="deleteActivity('${id}')" class="bg-black/20 hover:bg-black/40 text-current p-1 px-2 rounded-lg text-xs transition" title="Supprimer">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function createNewActivity() {
+      const titleInput = document.getElementById('newActTitle');
+      const colorInput = document.getElementById('newActColor');
+      const iconInput = document.getElementById('newActIcon');
+
+      const name = titleInput.value.trim();
+      const color = colorInput.value;
+      const icon = iconInput.value || 'fa-book';
+
+      if (!name) {
+        showToast("Veuillez entrer le nom de l'activité.", "warning");
+        return;
+      }
+
+      const id = 'act_' + Date.now();
+      window.state.activities[id] = { name, color, icon };
+
+      titleInput.value = '';
+      saveStorage();
+      renderManagerGrid();
+      renderActiveTab();
+      populateActivityDropdowns();
+      showToast("Activité créée avec succès !");
+    }
+
+    function openEditActivityModal(id) {
+      const act = window.state.activities[id];
+      if (!act) return;
+
+      document.getElementById('editActId').value = id;
+      document.getElementById('editActTitle').value = act.name;
+      document.getElementById('editActColor').value = act.color || '#38bdf8';
+      document.getElementById('editActIcon').value = act.icon || 'fa-book';
+
+      document.getElementById('editActivityModal').classList.remove('hidden');
+    }
+
+    function saveActivityChanges() {
+      const id = document.getElementById('editActId').value;
+      const act = window.state.activities[id];
+      if (!act) return;
+
+      const name = document.getElementById('editActTitle').value.trim();
+      const color = document.getElementById('editActColor').value;
+      const icon = document.getElementById('editActIcon').value;
+
+      if (!name) {
+        showToast("Veuillez saisir un nom", "warning");
+        return;
+      }
+
+      window.state.activities[id] = { name, color, icon };
+
+      saveStorage();
+      renderManagerGrid();
+      renderActiveTab();
+      populateActivityDropdowns();
+      closeModal('editActivityModal');
+      showToast("Activité mise à jour !");
+    }
+
+    async function deleteActivity(id) {
+      const confirmed = await showCustomConfirm(`Voulez-vous vraiment supprimer l'activité "${window.state.activities[id]?.name}" ?`);
+      if (confirmed) {
+        delete window.state.activities[id];
+        (window.state.events || []).forEach(e => {
+          e.activityIds = (e.activityIds || []).filter(actId => actId !== id);
+        });
+        saveStorage();
+        renderManagerGrid();
+        renderActiveTab();
+        populateActivityDropdowns();
+        showToast("Activité supprimée");
+      }
+    }
+
+    /* Dynamically populate datalist with existing & standard schedule hours */
+    function populateTimeDatalist() {
+      const datalist = document.getElementById('existingTimesList');
+      if (!datalist) return;
+
+      const defaultTimes = ["08:00", "08:15", "09:15", "10:15", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30", "17:30", "18:00"];
+      const usedTimes = new Set(defaultTimes);
+
+      (window.state.events || []).forEach(e => {
+        if (e.start) usedTimes.add(e.start);
+        if (e.end) usedTimes.add(e.end);
+      });
+
+      const sortedTimes = Array.from(usedTimes).sort();
+      datalist.innerHTML = sortedTimes.map(time => `<option value="${time}">`).join('');
+    }
+
+    function openEventModal(id = null) {
+      populateActivityCheckboxes();
+      populateTimeDatalist();
+      const modal = document.getElementById('eventModal');
+      modal.classList.remove('hidden');
+
+      if (id) {
+        const ev = window.state.events.find(e => e.id === id);
+        document.getElementById('modalEventTitle').innerText = "Modifier le créneau";
+        document.getElementById('eventId').value = ev.id;
+        document.getElementById('eventDay').value = ev.day;
+        document.getElementById('eventStart').value = ev.start;
+        document.getElementById('eventEnd').value = ev.end || '';
+        document.getElementById('eventNote').value = ev.note || '';
+
+        const selected = ev.activityIds || [];
+        document.querySelectorAll('#activityCheckboxes input[type="checkbox"]').forEach(cb => {
+          cb.checked = selected.includes(cb.value);
+        });
+        updateBubbleStyles();
+
+        document.getElementById('btnDeleteEvent').classList.remove('hidden');
+      } else {
+        document.getElementById('modalEventTitle').innerText = "Nouveau créneau type";
+        document.getElementById('eventId').value = '';
+        document.getElementById('eventStart').value = '08:00';
+        document.getElementById('eventEnd').value = '10:00';
+        document.getElementById('eventNote').value = '';
+        document.querySelectorAll('#activityCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+        updateBubbleStyles();
+        document.getElementById('btnDeleteEvent').classList.add('hidden');
+      }
+    }
+
+    function openEventModalForDay(day) {
+      openEventModal();
+      document.getElementById('eventDay').value = day;
+    }
+
+    function populateActivityCheckboxes() {
+      const container = document.getElementById('activityCheckboxes');
+      container.innerHTML = '';
+
+      const keys = Object.keys(window.state.activities || {});
+      if (keys.length === 0) {
+        container.innerHTML = `<span class="text-slate-400 text-xs italic">Aucune activité créée. Ouvrez le gestionnaire d'activités.</span>`;
+        return;
+      }
+
+      keys.forEach(id => {
+        const act = window.state.activities[id];
+        const iconClass = act.icon || 'fa-book';
+        const label = document.createElement('label');
+        label.className = "activity-bubble cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all select-none text-xs font-bold border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-600";
+        label.innerHTML = `
+          <input type="checkbox" value="${id}" class="hidden" onchange="updateBubbleStyles()">
+          <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${act.color};"></span>
+          <i class="fa-solid ${iconClass} text-xs"></i>
+          <span>${act.name}</span>
+          <i class="fa-solid fa-check text-[10px] check-icon opacity-0 transition-opacity ml-0.5"></i>
+        `;
+        container.appendChild(label);
+      });
+      updateBubbleStyles();
+    }
+
+    /* Helper pour le style visuel dynamique des bulles d'activités */
+    function updateBubbleStyles() {
+      document.querySelectorAll('#activityCheckboxes label').forEach(label => {
+        const cb = label.querySelector('input[type="checkbox"]');
+        if (!cb) return;
+        const actId = cb.value;
+        const act = window.state.activities[actId];
+        const checkIcon = label.querySelector('.check-icon');
+        if (cb.checked) {
+          label.style.borderColor = act ? act.color : '#6366f1';
+          label.style.backgroundColor = act ? `${act.color}25` : 'rgba(99, 102, 241, 0.2)';
+          label.style.boxShadow = act ? `0 0 12px ${act.color}35` : 'none';
+          label.style.color = '#ffffff';
+          if (checkIcon) checkIcon.classList.remove('opacity-0');
+        } else {
+          label.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+          label.style.backgroundColor = 'rgba(15, 23, 42, 0.6)';
+          label.style.boxShadow = 'none';
+          label.style.color = '#94a3b8';
+          if (checkIcon) checkIcon.classList.add('opacity-0');
+        }
+      });
+    }
+
+    function populateActivityDropdowns() {
+      const selectDated = document.getElementById('datedEventActSelect');
+      const selectTask = document.getElementById('newTaskActivity');
+
+      if (selectDated) {
+        selectDated.innerHTML = '<option value="">(Aucune activité)</option>';
+        Object.keys(window.state.activities || {}).forEach(id => {
+          selectDated.innerHTML += `<option value="${id}">${window.state.activities[id].name}</option>`;
+        });
+      }
+
+      if (selectTask) {
+        selectTask.innerHTML = '<option value="">(Aucune activité)</option>';
+        Object.keys(window.state.activities || {}).forEach(id => {
+          selectTask.innerHTML += `<option value="${id}">${window.state.activities[id].name}</option>`;
+        });
+      }
+    }
+
+    function saveEvent() {
+      const id = document.getElementById('eventId').value;
+      const day = document.getElementById('eventDay').value;
+      const start = normalizeTimeInput(document.getElementById('eventStart').value.trim());
+      const end = normalizeTimeInput(document.getElementById('eventEnd').value.trim());
+      const note = document.getElementById('eventNote').value.trim();
+
+      const checkedBoxes = document.querySelectorAll('#activityCheckboxes input[type="checkbox"]:checked');
+      const selectedActivityIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+      if (selectedActivityIds.length === 0) {
+        showToast("Veuillez sélectionner au moins une activité", "warning");
+        return;
+      }
+      if (!start) {
+        showToast("Veuillez indiquer l'heure de début", "warning");
+        return;
+      }
+
+      if (id) {
+        const index = window.state.events.findIndex(e => e.id === id);
+        if (index !== -1) {
+          window.state.events[index] = { ...window.state.events[index], id, day, start, end, activityIds: selectedActivityIds, note };
+        }
+      } else {
+        window.state.events.push({ id: 'ev_' + Date.now(), day, start, end, activityIds: selectedActivityIds, note });
+      }
+
+      // Sort all events chronologically before saving
+      window.state.events.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+      saveStorage();
+      renderSchedule();
+      closeModal('eventModal');
+      showToast("Créneau enregistré !");
+    }
+
+    async function deleteEvent() {
+      const id = document.getElementById('eventId').value;
+      const confirmed = await showCustomConfirm("Voulez-vous supprimer ce créneau ?");
+      if (confirmed) {
+        window.state.events = window.state.events.filter(e => e.id !== id);
+        saveStorage();
+        renderSchedule();
+        closeModal('eventModal');
+        showToast("Créneau supprimé");
+      }
+    }
+
+    /* Dated Events Logic */
+    function openDatedEventModal(id = null) {
+      populateActivityDropdowns();
+      const modal = document.getElementById('datedEventModal');
+      modal.classList.remove('hidden');
+
+      if (id) {
+        const ev = window.state.datedEvents.find(e => e.id === id);
+        document.getElementById('modalDatedTitle').innerText = "Modifier l'événement";
+        document.getElementById('datedEventId').value = ev.id;
+        document.getElementById('datedEventTitleInput').value = ev.title;
+        document.getElementById('datedEventActSelect').value = ev.actId || '';
+        document.getElementById('datedEventIconSelect').value = ev.icon || 'fa-calendar-day';
+        document.getElementById('datedEventDateInput').value = ev.date;
+        document.getElementById('datedEventStartInput').value = ev.start || '';
+        document.getElementById('datedEventEndInput').value = ev.end || '';
+        document.getElementById('datedEventRoomInput').value = ev.room || '';
+        document.getElementById('datedEventTagInput').value = ev.tag || 'Examen';
+        document.getElementById('datedEventNoteInput').value = ev.note || '';
+
+        document.getElementById('btnDeleteDatedEvent').classList.remove('hidden');
+      } else {
+        document.getElementById('modalDatedTitle').innerText = "Planifier un Événement Daté";
+        document.getElementById('datedEventId').value = '';
+        document.getElementById('datedEventTitleInput').value = '';
+        document.getElementById('datedEventDateInput').value = new Date().toISOString().split('T')[0];
+        document.getElementById('datedEventStartInput').value = '08:00';
+        document.getElementById('datedEventEndInput').value = '10:00';
+        document.getElementById('datedEventRoomInput').value = '';
+        document.getElementById('datedEventNoteInput').value = '';
+
+        document.getElementById('btnDeleteDatedEvent').classList.add('hidden');
+      }
+    }
+
+    function saveDatedEvent() {
+      const id = document.getElementById('datedEventId').value;
+      const title = document.getElementById('datedEventTitleInput').value.trim();
+      const actId = document.getElementById('datedEventActSelect').value;
+      const icon = document.getElementById('datedEventIconSelect').value;
+      const date = document.getElementById('datedEventDateInput').value;
+      const start = document.getElementById('datedEventStartInput').value;
+      const end = document.getElementById('datedEventEndInput').value;
+      const room = document.getElementById('datedEventRoomInput').value.trim();
+      const tag = document.getElementById('datedEventTagInput').value;
+      const note = document.getElementById('datedEventNoteInput').value.trim();
+
+      if (!title || !date) {
+        showToast("Veuillez remplir au moins le titre et la date", "warning");
+        return;
+      }
+
+      if (id) {
+        const idx = window.state.datedEvents.findIndex(e => e.id === id);
+        if (idx !== -1) {
+          window.state.datedEvents[idx] = { id, title, actId, icon, date, start, end, room, tag, note };
+        }
+      } else {
+        window.state.datedEvents.push({ id: 'dev_' + Date.now(), title, actId, icon, date, start, end, room, tag, note });
+      }
+
+      saveStorage();
+      renderDatedEvents();
+      updateAgendaBadge();
+      closeModal('datedEventModal');
+      showToast("Événement enregistré !");
+    }
+
+    async function deleteDatedEvent() {
+      const id = document.getElementById('datedEventId').value;
+      const confirmed = await showCustomConfirm("Supprimer cet événement ?");
+      if (confirmed) {
+        deleteDatedEventById(id);
+        closeModal('datedEventModal');
+      }
+    }
+
+    function deleteDatedEventById(id) {
+      window.state.datedEvents = window.state.datedEvents.filter(e => e.id !== id);
+      saveStorage();
+      renderDatedEvents();
+      updateAgendaBadge();
+      showToast("Événement supprimé");
+    }
+
+    function updateAgendaBadge() {
+      const count = (window.state.datedEvents || []).length;
+      const badge = document.getElementById('agendaCountBadge');
+      if (count > 0) {
+        badge.innerText = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    /* Homework Management Functions */
+    function addNewTask() {
+      const titleInput = document.getElementById('newTaskTitle');
+      const actId = document.getElementById('newTaskActivity').value;
+      const priority = document.getElementById('newTaskPriority').value;
+      const dueDate = document.getElementById('newTaskDate').value;
+      const note = document.getElementById('newTaskNote').value.trim();
+
+      const title = titleInput.value.trim();
+      if (!title) {
+        showToast("Veuillez saisir un nom pour le devoir", "warning");
+        return;
+      }
+
+      window.state.tasks.push({
+        id: 'task_' + Date.now(),
+        title,
+        actId,
+        priority,
+        dueDate,
+        note,
+        completed: false
+      });
+
+      titleInput.value = '';
+      document.getElementById('newTaskNote').value = '';
+      saveStorage();
+      renderHomeworkAgenda();
+      updateTaskBadge();
+      closeModal('newTaskModal');
+      showToast("Devoir planifié !");
+    }
+
+    function toggleTask(id) {
+      const task = window.state.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveStorage();
+        renderHomeworkAgenda();
+        updateTaskBadge();
+      }
+    }
+
+    function deleteTask(id) {
+      window.state.tasks = window.state.tasks.filter(t => t.id !== id);
+      saveStorage();
+      renderHomeworkAgenda();
+      updateTaskBadge();
+      showToast("Devoir supprimé");
+    }
+
+    function updateTaskBadge() {
+      const pendingCount = (window.state.tasks || []).filter(t => !t.completed).length;
+      const badge = document.getElementById('taskCounterBadge');
+      if (pendingCount > 0) {
+        badge.innerText = pendingCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    /* Stats Calculator */
+    function updateStatsModal() {
+      let totalMinutes = 0;
+      const actMap = {};
+
+      (window.state.events || []).forEach(e => {
+        if (!e.start || !e.end) return;
+        const [h1, m1] = e.start.split(':').map(Number);
+        const [h2, m2] = e.end.split(':').map(Number);
+        
+        let dur = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (dur <= 0) dur = 60;
+
+        totalMinutes += dur;
+
+        (e.activityIds || []).forEach(actId => {
+          actMap[actId] = (actMap[actId] || 0) + dur;
+        });
+      });
+
+      const totalHours = (totalMinutes / 60).toFixed(1);
+      const totalWeeklyHoursEl = document.getElementById('totalWeeklyHours');
+      if (totalWeeklyHoursEl) {
+        totalWeeklyHoursEl.innerText = `${totalHours}h`;
+      }
+
+      const breakdown = document.getElementById('statsBreakdown');
+      if (!breakdown) return;
+      breakdown.innerHTML = '';
+
+      if (Object.keys(actMap).length === 0) {
+        breakdown.innerHTML = `<div class="text-center text-xs text-slate-500 italic py-4">Aucune donnée disponible.</div>`;
+        return;
+      }
+
+      Object.keys(actMap).forEach(actId => {
+        const act = window.state.activities[actId];
+        const mins = actMap[actId];
+        const hrs = (mins / 60).toFixed(1);
+        const pct = totalMinutes > 0 ? Math.round((mins / totalMinutes) * 100) : 0;
+
+        const row = document.createElement('div');
+        row.className = "space-y-1";
+        row.innerHTML = `
+          <div class="flex justify-between text-xs font-bold">
+            <span style="color: ${act?.color || '#38bdf8'}">${act?.name || 'Inconnue'}</span>
+            <span class="text-slate-300">${hrs}h (${pct}%)</span>
+          </div>
+          <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden">
+            <div class="h-2 rounded-full transition-all duration-500" style="width: ${pct}%; background-color: ${act?.color || '#38bdf8'}"></div>
+          </div>
+        `;
+        breakdown.appendChild(row);
+      });
+    }
+
+    /* Preset Templates */
+    async function loadTemplate(type) {
+      const confirmed = await showCustomConfirm("Voulez-vous charger ce modèle ? Votre emploi du temps actuel sera remplacé.");
+      if (!confirmed) return;
+
+      if (type === 'blank') {
+        window.state.activities = {};
+        window.state.events = [];
+      } else if (type === 'ciel') {
+        window.state.headerData = { title: "BTS CIEL - Emploi du Temps", subtitle: "Cybersécurité, Informatique & Réseaux" };
+        window.state.activities = {
+          'act_1': { name: 'Cybersécurité', color: '#f43f5e', icon: 'fa-shield-halved' },
+          'act_2': { name: 'Réseaux & Comm', color: '#0ea5e9', icon: 'fa-network-wired' },
+          'act_3': { name: 'Dev C++/Python', color: '#10b981', icon: 'fa-laptop-code' },
+          'act_4': { name: 'Mathématiques', color: '#a855f7', icon: 'fa-calculator' },
+          'act_5': { name: 'Électronique', color: '#f59e0b', icon: 'fa-bolt' }
+        };
+        window.state.events = [
+          { id: 'ev_1', day: 'Lundi', start: '08:15', end: '10:15', activityIds: ['act_2'], room: 'Labo 102', note: 'TP Routeurs' },
+          { id: 'ev_2', day: 'Lundi', start: '10:30', end: '12:30', activityIds: ['act_4'], room: 'Salle 204', note: 'Algèbre' },
+          { id: 'ev_3', day: 'Mardi', start: '08:15', end: '12:15', activityIds: ['act_1'], room: 'Labo Cyber', note: 'Analyse Traces' },
+          { id: 'ev_4', day: 'Mercredi', start: '08:15', end: '11:15', activityIds: ['act_3'], room: 'Labo Dev', note: 'Projets' }
+        ];
+      } else if (type === 'sio') {
+        window.state.headerData = { title: "BTS SIO - Emploi du Temps", subtitle: "Services Informatiques aux Organisations" };
+        window.state.activities = {
+          'act_11': { name: 'Dev SLAM / BDD', color: '#8b5cf6', icon: 'fa-laptop-code' },
+          'act_12': { name: 'Réseaux SISR', color: '#06b6d4', icon: 'fa-server' },
+          'act_13': { name: 'Droit & CGE', color: '#ec4899', icon: 'fa-book' },
+          'act_14': { name: 'Anglais Tech', color: '#eab308', icon: 'fa-language' }
+        };
+        window.state.events = [
+          { id: 'ev_11', day: 'Lundi', start: '08:30', end: '11:30', activityIds: ['act_11'], room: 'Salle B12', note: 'SQL & PHP' },
+          { id: 'ev_12', day: 'Mardi', start: '13:30', end: '16:30', activityIds: ['act_12'], room: 'Labo SISR', note: 'Virtualisation' }
+        ];
+      }
+
+      saveStorage();
+      loadHeaderUI();
+      renderActiveTab();
+      renderManagerGrid();
+      populateActivityDropdowns();
+      closeModal('templatesModal');
+      showToast("Modèle chargé !");
+    }
+
+    /* Export / Import Logic */
+    function exportToPNG() {
+      const scheduleEl = document.getElementById('scheduleContainer');
+      if (!scheduleEl) return;
+
+      showToast("Génération de l'image PNG...", "info");
+
+      // Création d'un conteneur d'export temporaire incluant le nom en haut et la grille des jours
+      const exportContainer = document.createElement('div');
+      exportContainer.style.position = 'fixed';
+      exportContainer.style.left = '-9999px';
+      exportContainer.style.top = '0';
+      exportContainer.style.width = '1450px';
+      exportContainer.style.backgroundColor = '#080c14';
+      exportContainer.style.color = '#f8fafc';
+      exportContainer.style.padding = '36px';
+      exportContainer.style.borderRadius = '24px';
+      exportContainer.style.fontFamily = 'Plus Jakarta Sans, sans-serif';
+
+      // Rehausse de hauteur de ligne pour éviter toute rognure html2canvas
+      const styleTag = document.createElement('style');
+      styleTag.textContent = `
+        .event-card, .event-card * {
+          overflow: visible !important;
+          line-height: 1.4 !important;
+        }
+      `;
+      exportContainer.appendChild(styleTag);
+
+      // En-tête : Titre principal et sous-titre du planning
+      const titleText = window.state.headerData.title || "Planning & Agenda Hebdomadaire";
+      const subtitleText = window.state.headerData.subtitle || "";
+
+      const headerDiv = document.createElement('div');
+      headerDiv.style.marginBottom = '24px';
+      headerDiv.style.paddingBottom = '16px';
+      headerDiv.style.borderBottom = '1px solid rgba(255, 255, 255, 0.12)';
+      headerDiv.innerHTML = `
+        <h1 style="font-size: 30px; font-weight: 800; color: #38bdf8; margin: 0 0 6px 0; padding: 0; line-height: 1.2; text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);">
+          ${titleText}
+        </h1>
+        <p style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin: 0; padding: 0;">
+          ${subtitleText}
+        </p>
+      `;
+
+      // Duplication de la grille des jours et des créneaux
+      const scheduleClone = scheduleEl.cloneNode(true);
+      
+      // Retrait des boutons d'ajout sur le clone pour une image propre
+      scheduleClone.querySelectorAll('.no-print, button').forEach(btn => btn.remove());
+
+      exportContainer.appendChild(headerDiv);
+      exportContainer.appendChild(scheduleClone);
+      document.body.appendChild(exportContainer);
+
+      if (window.html2canvas) {
+        html2canvas(exportContainer, {
+          backgroundColor: '#080c14',
+          scale: 2,
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `planning_${new Date().toISOString().split('T')[0]}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          document.body.removeChild(exportContainer);
+          showToast("Image PNG téléchargée avec succès !");
+        }).catch(err => {
+          console.error("Erreur d'exportation PNG:", err);
+          if (document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
+          showToast("Erreur lors de la création de l'image PNG", "warning");
+        });
+      } else {
+        if (document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
+        showToast("Librairie d'exportation d'image indisponible", "warning");
+      }
+    }
+
+    function exportToHTML() {
+      const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'planning_bts_app.html';
+      a.click();
+      showToast("Fichier HTML téléchargé !");
+    }
+
+    function exportToICS() {
+      let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Planning BTS//FR\n";
+      (window.state.events || []).forEach(e => {
+        const actNames = (e.activityIds || []).map(id => window.state.activities[id]?.name).filter(Boolean).join(' - ');
+        icsContent += "BEGIN:VEVENT\n";
+        icsContent += `SUMMARY:${actNames || 'Cours'}\n`;
+        icsContent += `DESCRIPTION:${e.note || ''}\n`;
+        icsContent += `LOCATION:${e.room || ''}\n`;
+        icsContent += "END:VEVENT\n";
+      });
+      icsContent += "END:VCALENDAR";
+
+      const blob = new Blob([icsContent], { type: 'text/calendar' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'planning_bts.ics';
+      a.click();
+      showToast("Fichier .ICS généré !");
+    }
+
+    function exportJSONBackup() {
+      const backupData = {
+        headerData: window.state.headerData,
+        activities: window.state.activities,
+        events: window.state.events,
+        datedEvents: window.state.datedEvents,
+        tasks: window.state.tasks,
+        updatedAt: window.state.updatedAt
+      };
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'backup_planning_bts.json';
+      a.click();
+      showToast("Sauvegarde exportée !");
+    }
+
+    function triggerJSONImport() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function importJSONBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.headerData) window.state.headerData = imported.headerData;
+          if (imported.activities) window.state.activities = imported.activities;
+          if (imported.events) window.state.events = imported.events;
+          if (imported.datedEvents) window.state.datedEvents = imported.datedEvents;
+          if (imported.tasks) window.state.tasks = imported.tasks;
+
+          saveStorage();
+          loadHeaderUI();
+          renderActiveTab();
+          renderManagerGrid();
+          updateTaskBadge();
+          updateAgendaBadge();
+          showToast("Sauvegarde importée !");
+        } catch (err) {
+          showToast("Erreur d'importation JSON", "warning");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    async function confirmResetAll() {
+      const confirmed = await showCustomConfirm("Êtes-vous sûr de vouloir tout réinitialiser ? Toutes vos données seront effacées.");
+      if (confirmed) {
+        localStorage.clear();
+        window.state.headerData = DEFAULT_HEADER;
+        window.state.activities = {};
+        window.state.events = [];
+        window.state.datedEvents = [];
+        window.state.tasks = [];
+        saveStorage();
+        loadHeaderUI();
+        renderActiveTab();
+        renderManagerGrid();
+        updateTaskBadge();
+        updateAgendaBadge();
+        showToast("Application réinitialisée !");
+      }
+    }
+
+    /* AI Revision Sheet Generator Functions */
+    function handleAIFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        reader.onload = function(event) {
+          const base64Data = event.target.result.split(',')[1];
+          uploadedFileData = {
+            name: file.name,
+            mimeType: file.type,
+            base64: base64Data,
+            isMedia: true
+          };
+          updateAIFileBadge(file.name);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload = function(event) {
+          uploadedFileData = {
+            name: file.name,
+            content: event.target.result,
+            isMedia: false
+          };
+          updateAIFileBadge(file.name);
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    function updateAIFileBadge(fileName) {
+      const badge = document.getElementById('aiFileBadge');
+      const nameEl = document.getElementById('aiFileName');
+      nameEl.innerText = fileName;
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+      showToast("Fichier prêt pour l'IA");
+    }
+
+    function removeAIFile() {
+      uploadedFileData = null;
+      document.getElementById('aiFileInput').value = '';
+      const badge = document.getElementById('aiFileBadge');
+      badge.classList.add('hidden');
+      badge.classList.remove('flex');
+    }
+
+    async function generateAISheet() {
+      const promptText = document.getElementById('aiPromptInput').value.trim();
+      const sourceContent = document.getElementById('aiSourceInput').value.trim();
+      const docType = document.getElementById('aiDocType').value;
+
+      if (!promptText && !sourceContent && !uploadedFileData) {
+        showToast("Veuillez remplir une consigne ou joindre un fichier.", "warning");
+        return;
+      }
+
+      const loadingEl = document.getElementById('aiLoading');
+      const resultEl = document.getElementById('aiResultContainer');
+      const outputEl = document.getElementById('aiOutputText');
+
+      loadingEl.classList.remove('hidden');
+      resultEl.classList.add('hidden');
+
+      const systemPrompt = `Tu es un assistant pédagogique expert pour étudiants en BTS. Ta mission est de générer un document d'étude ou une fiche de révision ultra claire, lisible et parfaitement structurée.
+Utilise du Markdown pour la mise en forme (Titres ##, liste à puces, texte en gras **mot**, encadrés de définitions).`;
+
+      let userParts = [];
+      let textQuery = `Consigne: ${promptText || "Synthétise l'essentiel de ce contenu de manière structurée et claire."}\nFormat: ${docType}\n\nSource:\n${sourceContent || "(Fichier joint)"}`;
+
+      if (uploadedFileData && !uploadedFileData.isMedia && uploadedFileData.content) {
+        textQuery += `\n\n--- Contenu de ${uploadedFileData.name} ---\n${uploadedFileData.content}`;
+      }
+
+      userParts.push({ text: textQuery });
+
+      if (uploadedFileData && uploadedFileData.isMedia && uploadedFileData.base64) {
+        userParts.push({
+          inlineData: {
+            mimeType: uploadedFileData.mimeType,
+            data: uploadedFileData.base64
+          }
+        });
+      }
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: [{ parts: userParts }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      };
+
+      let attempts = 0;
+      let success = false;
+      let resultText = "";
+
+      while (attempts < 3 && !success) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+          const candidate = data.candidates?.[0];
+          if (candidate && candidate.content?.parts?.[0]?.text) {
+            resultText = candidate.content.parts[0].text;
+            success = true;
+          } else {
+            throw new Error("Réponse vide de l'API");
+          }
+        } catch (err) {
+          attempts++;
+          if (attempts < 3) {
+            await new Promise(res => setTimeout(res, 1000 * Math.pow(2, attempts)));
+          }
+        }
+      }
+
+      loadingEl.classList.add('hidden');
+
+      if (success) {
+        currentGeneratedMarkdown = resultText;
+        outputEl.innerHTML = parseMarkdownToHTML(resultText);
+        resultEl.classList.remove('hidden');
+        showToast("Fiche générée avec succès !");
+      } else {
+        showToast("Erreur de génération. Veuillez réessayer.", "warning");
+      }
+    }
+
+    function parseMarkdownToHTML(md) {
+      if (!md) return "";
+      let html = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      html = html.replace(/^### (.*$)/gim, '<h4 class="font-extrabold text-indigo-300 text-xs mt-3 mb-1">$1</h4>');
+      html = html.replace(/^## (.*$)/gim, '<h3 class="font-bold text-emerald-400 text-sm mt-4 mb-2 border-b border-slate-800 pb-1">$1</h3>');
+      html = html.replace(/^# (.*$)/gim, '<h2 class="font-extrabold text-white text-base mt-4 mb-2">$1</h2>');
+
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>');
+      html = html.replace(/^\s*[\-\*]\s+(.*$)/gim, '<li class="ml-4 list-disc text-slate-300 my-0.5">$1</li>');
+
+      html = html.replace(/\n\n/g, '<br><br>');
+      html = html.replace(/\n/g, '<br>');
+
+      return html;
+    }
+
+    function copyAIGeneratedText() {
+      if (!currentGeneratedMarkdown) return;
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = currentGeneratedMarkdown;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      showToast("Contenu copié !");
+    }
+
+    function downloadAIGeneratedText() {
+      if (!currentGeneratedMarkdown) return;
+      const blob = new Blob([currentGeneratedMarkdown], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Fiche_Revision_IA.txt';
+      a.click();
+      showToast("Fichier téléchargé !");
+    }
+
+    function downloadAIGeneratedPDF() {
+      const outputEl = document.getElementById('aiOutputText');
+      if (!outputEl || !currentGeneratedMarkdown) return;
+
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.color = '#000';
+      element.style.fontFamily = 'sans-serif';
+      element.innerHTML = `
+        <div style="border-bottom:2px solid #10b981; padding-bottom:8px; margin-bottom:16px;">
+          <h1 style="font-size:20px; font-weight:bold; color:#065f46;">Fiche de Révision - ${window.state.headerData.title}</h1>
+          <p style="font-size:12px; color:#666;">Générée le ${new Date().toLocaleDateString('fr-FR')}</p>
+        </div>
+        <div style="font-size:12px; line-height:1.6;">
+          ${outputEl.innerHTML.replace(/text-white/g, 'text-black').replace(/text-emerald-400/g, 'text-emerald-700')}
+        </div>
+      `;
+
+      const opt = {
+        margin:       10,
+        filename:     'Fiche_Revision_IA.pdf',
+        image:        { type: 'png', quality: 1.0 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (window.html2pdf) {
+        window.html2pdf().set(opt).from(element).save();
+        showToast("Téléchargement PDF en cours...");
+      } else {
+        window.print();
+      }
+    }
+
+    /* Modals & Dialog Utility */
+    function openModal(id) {
+      if (id === 'statsModal') updateStatsModal();
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id);
+      menu.classList.toggle('hidden');
+    }
+
+    window.onclick = function(e) {
+      if (!e.target.closest('.relative')) {
+        document.getElementById('moreMenu')?.classList.add('hidden');
+      }
+    };
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const bgColor = type === 'warning' ? 'bg-amber-600' : 'bg-indigo-600';
+      toast.className = `${bgColor} text-white px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 transition-all duration-300 transform translate-y-2 pointer-events-auto`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    function showCustomConfirm(message) {
+      return new Promise((resolve) => {
+        document.getElementById('dialogMessage').innerText = message;
+        document.getElementById('customDialog').classList.remove('hidden');
+        dialogResolver = resolve;
+      });
+    }
+
+    function resolveDialog(value) {
+      document.getElementById('customDialog').classList.add('hidden');
+      if (dialogResolver) {
+        dialogResolver(value);
+        dialogResolver = null;
+      }
+    }
+  </script>
+</body>
+</html>
