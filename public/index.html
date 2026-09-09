@@ -170,6 +170,10 @@
 
       <!-- Quick Action Buttons -->
       <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 z-10">
+        <button id="googleAuthBtn" onclick="handleGoogleLogin()" class="bg-white/10 hover:bg-white/20 text-slate-100 font-bold px-4 py-2.5 rounded-2xl border border-white/15 shadow-lg backdrop-blur-md hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm" title="Se connecter avec Google">
+          <i class="fa-brands fa-google text-red-400"></i>
+          <span id="googleAuthText">Connexion Google</span>
+        </button>
         <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Générer un fichier</span>
@@ -932,7 +936,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     let db = null;
@@ -959,6 +963,19 @@
 
         try {
           auth = getAuth(app);
+          
+          onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+              currentUser = user;
+              updateGoogleButtonUI(user);
+              const cloudIdInput = document.getElementById('userCloudIdInput');
+              if (cloudIdInput) cloudIdInput.value = user.uid;
+              setupFirestoreListener(user.uid);
+            } else {
+              updateGoogleButtonUI(null);
+            }
+          });
+
           const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
           let userCred = null;
           if (initialToken) {
@@ -968,7 +985,7 @@
               console.warn("signInWithCustomToken non disponible:", authErr);
             }
           }
-          if (!userCred) {
+          if (!userCred && !auth.currentUser) {
             try {
               userCred = await signInAnonymously(auth);
             } catch (authErr) {
@@ -999,6 +1016,56 @@
         updateCloudStatusUI('error', 'Erreur Firestore');
       }
     }
+
+    function updateGoogleButtonUI(user) {
+      const btn = document.getElementById('googleAuthBtn');
+      const text = document.getElementById('googleAuthText');
+      if (!btn || !text) return;
+
+      if (user && !user.isAnonymous) {
+        const name = user.displayName ? user.displayName.split(' ')[0] : 'Mon Compte';
+        text.innerText = name;
+        btn.className = "bg-emerald-600/25 hover:bg-rose-600/30 text-emerald-300 hover:text-rose-300 font-bold px-4 py-2.5 rounded-2xl border border-emerald-500/30 hover:border-rose-500/30 shadow-lg backdrop-blur-md hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm";
+        btn.title = `Connecté : ${user.displayName || user.email}. Cliquer pour se déconnecter.`;
+      } else {
+        text.innerText = "Connexion Google";
+        btn.className = "bg-white/10 hover:bg-white/20 text-slate-100 font-bold px-4 py-2.5 rounded-2xl border border-white/15 shadow-lg backdrop-blur-md hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-2 text-xs sm:text-sm";
+        btn.title = "Se connecter avec Google";
+      }
+    }
+
+    window.handleGoogleLogin = async function() {
+      if (!auth) {
+        if (typeof window.showToast === 'function') window.showToast("Service d'authentification indisponible", "warning");
+        return;
+      }
+
+      if (auth.currentUser && !auth.currentUser.isAnonymous) {
+        const confirmed = await window.showCustomConfirm(`Se déconnecter du compte Google (${auth.currentUser.displayName || auth.currentUser.email}) ?`);
+        if (confirmed) {
+          await signOut(auth);
+          currentUser = null;
+          updateGoogleButtonUI(null);
+          if (typeof window.showToast === 'function') window.showToast("Déconnecté de Google");
+        }
+        return;
+      }
+
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        currentUser = user;
+        updateGoogleButtonUI(user);
+        const cloudIdInput = document.getElementById('userCloudIdInput');
+        if (cloudIdInput) cloudIdInput.value = user.uid;
+        setupFirestoreListener(user.uid);
+        if (typeof window.showToast === 'function') window.showToast(`Connecté : ${user.displayName || user.email}`);
+      } catch (err) {
+        console.error("Erreur de connexion Google:", err);
+        if (typeof window.showToast === 'function') window.showToast("Échec de connexion Google", "warning");
+      }
+    };
 
     function setupFirestoreListener(targetUid) {
       if (!db) return;
