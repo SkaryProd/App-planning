@@ -1396,19 +1396,127 @@
       return { background: gradient, textColor: textColor, border: 'rgba(255,255,255,0.25)' };
     }
 
-    /* Render Weekly Planning Schedule */
+    function renderMobileDayBar() {
+      const bar = document.getElementById('mobileDayBar');
+      if (!bar) return;
+      bar.innerHTML = '';
+
+      const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
+
+      const allBtn = document.createElement('button');
+      allBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap flex-shrink-0 ${
+        mobileDayFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+      }`;
+      allBtn.innerText = 'Tous';
+      allBtn.onclick = () => {
+        mobileDayFilter = 'ALL';
+        renderSchedule();
+      };
+      bar.appendChild(allBtn);
+
+      activeDays.forEach(day => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap flex-shrink-0 ${
+          mobileDayFilter === day ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+        }`;
+        btn.innerText = day;
+        btn.onclick = () => {
+          mobileDayFilter = day;
+          renderSchedule();
+        };
+        bar.appendChild(btn);
+      });
+    }
+
     function renderSchedule() {
       const container = document.getElementById('scheduleContainer');
+      if (!container) return;
       container.innerHTML = '';
 
       renderMobileDayBar();
 
       const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
-
-      // Filter days on mobile if a specific day is selected
       const isMobile = window.innerWidth < 768;
       const displayDays = (isMobile && mobileDayFilter !== 'ALL') 
         ? activeDays.filter(d => d === mobileDayFilter)
+        : activeDays;
+
+      if (displayDays.length === 1) {
+        container.className = "schedule-container grid grid-cols-1 gap-3 sm:gap-4";
+      } else if (viewMode === '5days') {
+        container.className = "schedule-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4";
+      } else {
+        container.className = "schedule-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4";
+      }
+
+      displayDays.forEach(day => {
+        const dayEvents = (window.state.events || []).filter(e => e.day === day);
+        dayEvents.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+        const col = document.createElement('div');
+        col.className = "glass-panel rounded-2xl sm:rounded-3xl p-3 sm:p-4 space-y-3 flex flex-col min-h-[350px] transition-all duration-200";
+        col.ondragover = (e) => { e.preventDefault(); col.classList.add('drag-over'); };
+        col.ondragleave = () => { col.classList.remove('drag-over'); };
+        col.ondrop = (e) => { handleDropEvent(e, day, col); };
+
+        col.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 flex-shrink-0">
+            <h3 class="font-extrabold text-xs sm:text-sm text-slate-200 tracking-wider uppercase flex items-center gap-1.5">
+              <span>${day}</span>
+              ${dayEvents.length > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 font-bold">${dayEvents.length}</span>` : ''}
+            </h3>
+            <button onclick="openEventModalForDay('${day}')" class="text-slate-400 hover:text-indigo-400 p-1 rounded-lg transition text-xs" title="Ajouter un créneau pour ${day}">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div class="space-y-2.5 flex-grow overflow-y-auto no-scrollbar">
+            ${dayEvents.length === 0 ? `
+              <div class="h-full min-h-[120px] flex items-center justify-center text-center p-4">
+                <span class="text-[11px] text-slate-500 italic">Aucun cours créné</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        const eventsContainer = col.querySelector('.space-y-2\\.5');
+
+        dayEvents.forEach(ev => {
+          const cardStyle = getEventCardStyle(ev.activityIds);
+          const actBadges = (ev.activityIds || []).map(id => {
+            const act = window.state.activities[id];
+            if (!act) return '';
+            return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold shadow-sm bg-black/30 text-white">
+                      <i class="fa-solid ${act.icon || 'fa-book'} text-[9px]"></i> ${act.name}
+                    </span>`;
+          }).join(' ');
+
+          const card = document.createElement('div');
+          card.className = "event-card rounded-2xl p-3 space-y-2 shadow-lg cursor-pointer transform hover:-translate-y-0.5 transition-all duration-200 border relative group select-none";
+          card.style.background = cardStyle.background;
+          card.style.color = cardStyle.textColor;
+          card.style.borderColor = cardStyle.border;
+          card.draggable = true;
+          card.ondragstart = (e) => handleDragStart(e, ev.id);
+          card.onclick = () => openEventModal(ev.id);
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between text-[11px] font-bold opacity-90 border-b border-black/10 pb-1">
+              <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-[10px]"></i> ${ev.start} ${ev.end ? '- ' + ev.end : ''}</span>
+              <i class="fa-solid fa-grip-vertical opacity-40 group-hover:opacity-100 transition-opacity text-[10px]"></i>
+            </div>
+            <div class="flex flex-wrap gap-1 items-center">
+              ${actBadges || `<span class="font-bold text-xs">${ev.note || 'Créneau'}</span>`}
+            </div>
+            ${ev.note ? `<p class="text-[11px] font-medium leading-tight opacity-90 bg-black/15 p-1.5 rounded-lg backdrop-blur-xs break-words">${ev.note}</p>` : ''}
+          `;
+
+          eventsContainer.appendChild(card);
+        });
+
+        container.appendChild(col);
+      });
+    }
+
     function getEventStatusAndCountdown(ev) {
       const now = new Date();
       const dateStr = ev.date;
