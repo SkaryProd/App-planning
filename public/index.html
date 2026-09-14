@@ -215,10 +215,6 @@
           <i class="fa-brands fa-google text-red-400"></i>
           <span id="googleAuthText">Connexion Google</span>
         </button>
-        <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Fiche IA</span>
-        </button>
         <button onclick="openDatedEventModal()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg shadow-sky-600/25 hover:shadow-sky-600/40 hover:-translate-y-0.5 active:translate-y-0 transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-grow sm:flex-grow-0 justify-center">
           <i class="fa-solid fa-calendar-day"></i>
           <span class="hidden xs:inline">Événement</span>
@@ -713,97 +709,6 @@
 
       <div class="pt-3 border-t border-slate-800 text-right flex-shrink-0">
         <button onclick="closeModal('statsModal')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs transition">
-          Fermer
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: GENERATEUR DE FICHE DE REVISION (IA GEMINI) -->
-  <div id="aiModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-    <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 space-y-5 animate-slide-up max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> Générer un fichier / Fiche de révision IA
-        </h3>
-        <button onclick="closeModal('aiModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="overflow-y-auto space-y-4 pr-1 flex-grow">
-        <p class="text-xs text-slate-300">
-          Téléchargez un fichier ou collez le texte d'un cours/exercice pour créer automatiquement votre fiche de révision.
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="sm:col-span-2 space-y-1">
-            <label class="block text-xs font-semibold text-slate-300">Consigne de révision</label>
-            <input type="text" id="aiPromptInput" placeholder="ex: Synthétise les définitions et formules essentielles" class="glass-input w-full p-2.5 rounded-xl text-xs">
-          </div>
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold text-slate-300">Format de sortie</label>
-            <select id="aiDocType" class="glass-input w-full p-2.5 rounded-xl text-xs">
-              <option value="Fiche de révision synthétique">Fiche de révision synthétique</option>
-              <option value="Fiche Formules & Définitions">Formules & Définitions clés</option>
-              <option value="Quiz & Questions-Réponses">Quiz / Questions - Réponses</option>
-              <option value="Résumé exécutif clair">Résumé structuré</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Importer un document / Photo de cours</label>
-          <div class="flex items-center gap-3">
-            <input type="file" id="aiFileInput" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp,.csv" onchange="handleAIFileUpload(event)" class="hidden">
-            <button onclick="document.getElementById('aiFileInput').click()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-2">
-              <i class="fa-solid fa-paperclip text-emerald-400"></i> Choisir un fichier...
-            </button>
-            <div id="aiFileBadge" class="hidden items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-lg text-xs">
-              <span id="aiFileName" class="truncate max-w-[200px]"></span>
-              <button onclick="removeAIFile()" class="text-slate-400 hover:text-rose-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Texte du cours ou énoncé d'exercice</label>
-          <textarea id="aiSourceInput" rows="4" placeholder="Collez ici les notes de cours..." class="glass-input w-full p-3 rounded-xl text-xs font-mono"></textarea>
-        </div>
-
-        <button onclick="generateAISheet()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Générer la fiche de révision
-        </button>
-
-        <div id="aiLoading" class="hidden py-8 text-center space-y-3">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
-          <p class="text-xs text-emerald-400 font-semibold">Génération de la fiche en cours...</p>
-        </div>
-
-        <div id="aiResultContainer" class="hidden space-y-3 border-t border-slate-800 pt-4">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <span class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">Fiche générée</span>
-            <div class="flex items-center gap-2">
-              <button onclick="copyAIGeneratedText()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                <i class="fa-regular fa-copy"></i> Copier
-              </button>
-              <button onclick="downloadAIGeneratedText()" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/30 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                <i class="fa-solid fa-download"></i> Texte (.txt)
-              </button>
-              <button onclick="downloadAIGeneratedPDF()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
-                <i class="fa-solid fa-file-pdf"></i> PDF
-              </button>
-            </div>
-          </div>
-
-          <div id="aiOutputText" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 text-xs text-slate-200 leading-relaxed space-y-2 overflow-x-auto">
-            <!-- Output -->
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-slate-800 text-right flex-shrink-0">
-        <button onclick="closeModal('aiModal')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs transition">
           Fermer
         </button>
       </div>
@@ -1337,8 +1242,6 @@
     let mobileDayFilter = 'ALL';
     let dialogResolver = null;
     let draggedEventId = null;
-    let currentGeneratedMarkdown = "";
-    let uploadedFileData = null;
 
     /* Firestore Storage Sync */
     function saveStorage() {
@@ -1358,6 +1261,13 @@
       renderManagerGrid();
       updateTaskBadge();
       updateAgendaBadge();
+
+      // Periodic check every 60 seconds for live countdowns & auto-deletion of events older than 72h
+      setInterval(() => {
+        if (currentMainTab === 'agenda') {
+          renderDatedEvents();
+        }
+      }, 60000);
     };
 
     /* Populate Icon Selectors */
@@ -1499,126 +1409,124 @@
       const isMobile = window.innerWidth < 768;
       const displayDays = (isMobile && mobileDayFilter !== 'ALL') 
         ? activeDays.filter(d => d === mobileDayFilter)
-        : activeDays;
+    function getEventStatusAndCountdown(ev) {
+      const now = new Date();
+      const dateStr = ev.date;
+      if (!dateStr) return { status: 'UNKNOWN', label: '', countdown: '', expired: false };
 
-      container.className = `schedule-container grid grid-cols-1 ${viewMode === '5days' ? 'md:grid-cols-5' : 'md:grid-cols-7'} gap-3 sm:gap-4`;
+      const startStr = ev.start || '00:00';
+      const startDate = new Date(`${dateStr}T${startStr}:00`);
+      const startMs = startDate.getTime();
 
-      displayDays.forEach(day => {
-        const dayCol = document.createElement('div');
-        dayCol.className = 'glass-panel rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden transition-all border border-slate-800 shadow-xl';
-        
-        dayCol.ondragover = (e) => { e.preventDefault(); dayCol.classList.add('drag-over'); };
-        dayCol.ondragleave = () => dayCol.classList.remove('drag-over');
-        dayCol.ondrop = (e) => handleDropEvent(e, day, dayCol);
+      let hasEnd = false;
+      let endMs = startMs;
 
-        let dayEvents = (window.state.events || []).filter(e => e.day === day);
-        dayEvents.sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
-
-        let eventsHtml = dayEvents.map(e => {
-          const style = getEventCardStyle(e.activityIds);
-          
-          const actTitlesHtml = (e.activityIds || []).map(id => {
-            const act = window.state.activities[id];
-            if (!act) return '';
-            const iconClass = act.icon || 'fa-book';
-            return `
-              <div class="flex items-center gap-2 text-xs sm:text-sm font-extrabold leading-normal py-0.5">
-                <i class="fa-solid ${iconClass} text-xs opacity-80 flex-shrink-0"></i>
-                <span class="break-words leading-normal">${act.name}</span>
-              </div>`;
-          }).filter(Boolean).join('') || `<div class="text-xs font-extrabold opacity-80 py-0.5">Activité</div>`;
-
-          const timeText = e.end ? `${e.start.replace(':', 'h')} - ${e.end.replace(':', 'h')}` : `${e.start.replace(':', 'h')}`;
-          
-          return `
-            <div class="event-card rounded-2xl p-3 sm:p-3.5 cursor-pointer shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl relative border overflow-visible flex flex-col justify-between gap-2"
-                 style="background: ${style.background}; border-color: ${style.border}; color: ${style.textColor};"
-                 draggable="true"
-                 ondragstart="handleDragStart(event, '${e.id}')"
-                 onclick="openEventModal('${e.id}')">
-              
-              <div class="flex items-center justify-between text-[11px] font-extrabold opacity-90 pb-1.5 border-b border-black/10">
-                <span class="inline-flex items-center gap-1.5"><i class="fa-regular fa-clock text-[10px]"></i> ${timeText}</span>
-              </div>
-
-              <div class="space-y-1 my-0.5 overflow-visible">${actTitlesHtml}</div>
-              
-              ${e.note ? `<div class="text-[11px] font-semibold opacity-80 italic flex items-center gap-1.5 pt-1 border-t border-black/10 break-words"><i class="fa-regular fa-note-sticky text-[10px] flex-shrink-0"></i> <span class="break-words">${e.note}</span></div>` : ''}
-            </div>
-          `;
-        }).join('');
-
-        dayCol.innerHTML = `
-          <div class="bg-slate-950/80 border-b border-slate-800 p-2.5 sm:p-3 text-center flex items-center justify-between px-3 sm:px-4">
-            <span class="font-extrabold text-xs tracking-wider uppercase text-slate-200">${day}</span>
-            <button onclick="openEventModalForDay('${day}')" class="no-print w-7 h-7 sm:w-6 sm:h-6 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/50 text-indigo-300 text-xs flex items-center justify-center transition" title="Ajouter un créneau">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-
-          <div class="p-2 sm:p-2.5 flex flex-col gap-2 sm:gap-2.5 flex-grow min-h-[220px] sm:min-h-[320px]">
-            ${eventsHtml || `<div class="h-full flex items-center justify-center text-slate-500 text-xs italic py-8">Aucun cours créné</div>`}
-          </div>
-        `;
-
-        container.appendChild(dayCol);
-      });
-    }
-
-    function renderMobileDayBar() {
-      const bar = document.getElementById('mobileDayBar');
-      if (!bar) return;
-
-      const activeDays = viewMode === '5days' ? ALL_DAYS.slice(0, 5) : ALL_DAYS;
-
-      let html = `
-        <button onclick="setMobileDayFilter('ALL')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap flex-shrink-0 ${mobileDayFilter === 'ALL' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white bg-slate-900/50'}">
-          Tous les jours
-        </button>
-      `;
-
-      activeDays.forEach(day => {
-        const shortName = day.substring(0, 3);
-        const isActive = mobileDayFilter === day;
-        html += `
-          <button onclick="setMobileDayFilter('${day}')" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap flex-shrink-0 ${isActive ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white bg-slate-900/50'}">
-            ${shortName}.
-          </button>
-        `;
-      });
-
-      bar.innerHTML = html;
-    }
-
-    function setMobileDayFilter(day) {
-      mobileDayFilter = day;
-      renderSchedule();
-    }
-
-    // Re-render schedule on window resize to adapt mobile day filter layout dynamically
-    window.addEventListener('resize', () => {
-      if (currentMainTab === 'planning') {
-        renderSchedule();
+      if (ev.end) {
+        hasEnd = true;
+        const endDate = new Date(`${dateStr}T${ev.end}:00`);
+        endMs = endDate.getTime();
       }
-    });
+
+      const completionMs = hasEnd ? endMs : startMs;
+      const seventyTwoHoursMs = 72 * 60 * 60 * 1000;
+
+      // Check if past 72h threshold for auto-deletion
+      if (now.getTime() - completionMs >= seventyTwoHoursMs) {
+        return { status: 'EXPIRED', expired: true };
+      }
+
+      const nowMs = now.getTime();
+
+      if (nowMs < startMs) {
+        // À venir (Upcoming)
+        const diff = startMs - nowMs;
+        let countdownStr = "";
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) {
+          const remHours = hours % 24;
+          countdownStr = `Dans ${days}j${remHours > 0 ? ' ' + remHours + 'h' : ''}`;
+        } else if (hours > 0) {
+          countdownStr = `Dans ${hours}h ${mins}m`;
+        } else {
+          countdownStr = `Dans ${Math.max(1, mins)} min`;
+        }
+
+        return {
+          status: 'UPCOMING',
+          label: 'À venir',
+          badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+          countdown: countdownStr,
+          expired: false
+        };
+      } else if (hasEnd && nowMs >= startMs && nowMs < endMs) {
+        // En cours (In Progress)
+        const diff = endMs - nowMs;
+        const mins = Math.floor(diff / (1000 * 60));
+        const hours = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        const countdownStr = hours > 0 ? `Reste ${hours}h ${remMins}m` : `Reste ${mins} min`;
+
+        return {
+          status: 'IN_PROGRESS',
+          label: 'En cours',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 animate-pulse',
+          countdown: countdownStr,
+          expired: false
+        };
+      } else {
+        // Terminé (Finished)
+        return {
+          status: 'FINISHED',
+          label: 'Terminé',
+          badgeClass: 'bg-slate-800 text-slate-400 border-slate-700',
+          countdown: 'Événement passé',
+          expired: false
+        };
+      }
+    }
 
     function renderDatedEvents() {
       const container = document.getElementById('datedEventsList');
+      if (!container) return;
       container.innerHTML = '';
 
-      let filtered = [...(window.state.datedEvents || [])];
+      let rawList = [...(window.state.datedEvents || [])];
+      let validEvents = [];
+      let hasPurged = false;
 
-      if (filtered.length === 0) {
+      // Filter and purge items older than 72 hours
+      rawList.forEach(ev => {
+        const statusInfo = getEventStatusAndCountdown(ev);
+        if (statusInfo.expired) {
+          hasPurged = true;
+        } else {
+          validEvents.push({ ...ev, _status: statusInfo });
+        }
+      });
+
+      if (hasPurged) {
+        window.state.datedEvents = validEvents.map(item => {
+          const { _status, ...cleanEv } = item;
+          return cleanEv;
+        });
+        saveStorage();
+      }
+
+      if (validEvents.length === 0) {
         container.innerHTML = `<div class="glass-panel rounded-2xl p-8 text-center text-slate-400 text-xs italic">Aucun événement daté enregistré. Cliquez sur "Ajouter un événement" pour planifier un examen, TP ou soutenance.</div>`;
         return;
       }
 
-      filtered.sort((a,b) => (a.date + a.start).localeCompare(b.date + b.start));
+      validEvents.sort((a,b) => (a.date + (a.start || '00:00')).localeCompare(b.date + (b.start || '00:00')));
 
-      filtered.forEach(ev => {
+      validEvents.forEach(ev => {
         const act = window.state.activities[ev.actId];
         const color = act?.color || '#38bdf8';
         const icon = ev.icon || 'fa-calendar-day';
+        const status = ev._status;
 
         const eventDate = new Date(ev.date);
         const formattedDate = eventDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -1635,6 +1543,8 @@
             <div class="space-y-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-extrabold text-sm text-white">${ev.title}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${status.badgeClass}">${status.label}</span>
+                ${status.countdown ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800/80 text-sky-300 border border-slate-700/80"><i class="fa-regular fa-hourglass-half mr-1 text-[9px]"></i>${status.countdown}</span>` : ''}
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">${ev.tag || 'Événement'}</span>
                 ${act ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold text-black" style="background-color: ${color};">${act.name}</span>` : ''}
               </div>
